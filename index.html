@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeseHeld – Dein Lesetrainer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+  :root {
+    --primary: #6C63FF;
+    --primary-light: #8B85FF;
+    --secondary: #FF6584;
+    --accent: #43E97B;
+    --accent2: #FFD93D;
+    --bg: #F0F0FF;
+    --card: #FFFFFF;
+    --text: #2D2B55;
+    --text-light: #6E6B9E;
+    --shadow: 0 8px 32px rgba(108,99,255,0.12);
+    --radius: 20px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background decoration */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -120px; right: -120px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(108,99,255,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -100px; left: -100px;
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(255,101,132,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 0;
+  }
+
+  .app {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 24px 0 16px;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .subtitle {
+    font-size: 1.05rem;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+
+  /* Navigation */
+  .nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 16px 0 24px;
+    flex-wrap: wrap;
+  }
+  .nav button {
+    padding: 10px 20px;
+    border: 2px solid transparent;
+    border-radius: 50px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: var(--card);
+    color: var(--text-light);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .nav button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(108,99,255,0.15);
+  }
+  .nav button.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 32px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    color: var(--primary);
+  }
+  .card h3 {
+    font-size: 1.15rem;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  .card p {
+    line-height: 1.7;
+    color: var(--text-light);
+    margin-bottom: 12px;
+  }
+
+  /* Page sections */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Home page */
+  .home-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  @media (max-width: 600px) {
+    .home-cards { grid-template-columns: 1fr; }
+  }
+  .home-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    border: 3px solid transparent;
+  }
+  .home-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(108,99,255,0.18);
+  }
+  .home-card:nth-child(1):hover { border-color: var(--primary); }
+  .home-card:nth-child(2):hover { border-color: var(--secondary); }
+  .home-card:nth-child(3):hover { border-color: var(--accent); }
+  .home-card:nth-child(4):hover { border-color: var(--accent2); }
+  .home-card .icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+  }
+  .home-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .home-card p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin: 0;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 50px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    box-shadow: 0 4px 16px rgba(108,99,255,0.3);
+  }
+  .btn-secondary {
+    background: linear-gradient(135deg, var(--secondary), #FF8FA3);
+    color: white;
+    box-shadow: 0 4px 16px rgba(255,101,132,0.3);
+  }
+  .btn-success {
+    background: linear-gradient(135deg, var(--accent), #38F9D7);
+    color: var(--text);
+    box-shadow: 0 4px 16px rgba(67,233,123,0.3);
+  }
+  .btn-warning {
+    background: linear-gradient(135deg, var(--accent2), #FFE066);
+    color: var(--text);
+    box-shadow: 0 4px 16px rgba(255,217,61,0.3);
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+  }
+  .btn-sm { padding: 8px 18px; font-size: 0.9rem; }
+
+  /* Reading area */
+  .reading-text {
+    font-size: 1.35rem;
+    line-height: 2;
+    padding: 24px;
+    background: #FAFAFF;
+    border-radius: 16px;
+    margin: 16px 0;
+    min-height: 120px;
+    border: 2px solid #E8E7F5;
+  }
+  .reading-text .word {
+    display: inline;
+    padding: 2px 4px;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+  .reading-text .word.highlight {
+    background: var(--accent);
+    color: var(--text);
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(67,233,123,0.4);
+  }
+  .reading-text .word.read {
+    color: var(--text-light);
+  }
+
+  /* Speed control */
+  .speed-control {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #FAFAFF;
+    border-radius: 16px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+  .speed-control label {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .speed-control input[type="range"] {
+    flex: 1;
+    min-width: 120px;
+    accent-color: var(--primary);
+    height: 8px;
+  }
+  .speed-value {
+    background: var(--primary);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    min-width: 100px;
+    text-align: center;
+  }
+
+  /* Quiz */
+  .quiz-option {
+    display: block;
+    width: 100%;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: 2px solid #E8E7F5;
+    border-radius: 14px;
+    background: #FAFAFF;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    color: var(--text);
+  }
+  .quiz-option:hover {
+    border-color: var(--primary);
+    background: #F0EFFF;
+    transform: translateX(4px);
+  }
+  .quiz-option.correct {
+    border-color: var(--accent);
+    background: #E8FFF0;
+    color: #1A8A4A;
+  }
+  .quiz-option.wrong {
+    border-color: var(--secondary);
+    background: #FFF0F3;
+    color: #C4304A;
+  }
+
+  /* Stats */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .stat-box {
+    text-align: center;
+    padding: 20px;
+    border-radius: 16px;
+    background: #FAFAFF;
+    border: 2px solid #E8E7F5;
+  }
+  .stat-box .stat-num {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--primary);
+  }
+  .stat-box .stat-label {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-top: 4px;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    width: 100%;
+    height: 14px;
+    background: #E8E7F5;
+    border-radius: 50px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+  .progress-bar .fill {
+    height: 100%;
+    border-radius: 50px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    transition: width 0.5s ease;
+  }
+
+  /* Chart area */
+  .chart-container {
+    width: 100%;
+    height: 220px;
+    margin: 16px 0;
+    position: relative;
+  }
+  .chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Text selection list */
+  .text-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .text-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 14px;
+    background: #FAFAFF;
+    border: 2px solid #E8E7F5;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .text-item:hover {
+    border-color: var(--primary);
+    transform: translateX(4px);
+    background: #F0EFFF;
+  }
+  .text-item .text-icon { font-size: 1.8rem; }
+  .text-item .text-info { flex: 1; }
+  .text-item .text-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+  .text-item .text-meta {
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+  .text-item .text-badge {
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+  }
+  .badge-easy { background: var(--accent); color: var(--text); }
+  .badge-medium { background: var(--accent2); color: var(--text); }
+  .badge-hard { background: var(--secondary); }
+
+  /* Timer display */
+  .timer {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Results */
+  .result-big {
+    text-align: center;
+    padding: 24px;
+  }
+  .result-big .wpm {
+    font-size: 4rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .result-big .wpm-label {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+
+  .result-message {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 16px;
+    border-radius: 14px;
+    margin: 12px 0;
+  }
+  .result-message.great {
+    background: #E8FFF0;
+    color: #1A8A4A;
+  }
+  .result-message.good {
+    background: #FFF8E0;
+    color: #8A6D1A;
+  }
+  .result-message.keep-going {
+    background: #F0EFFF;
+    color: var(--primary);
+  }
+
+  /* Vocabulary tooltip */
+  .vocab-word {
+    border-bottom: 2px dashed var(--accent2);
+    cursor: help;
+    position: relative;
+  }
+  .vocab-word:hover::after {
+    content: attr(data-meaning);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    z-index: 10;
+    font-weight: 600;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .hidden { display: none !important; }
+
+  /* Level selector */
+  .level-btns {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+  .level-btns button {
+    padding: 8px 20px;
+    border: 2px solid #E8E7F5;
+    border-radius: 50px;
+    background: #FAFAFF;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+  .level-btns button:hover { border-color: var(--primary); }
+  .level-btns button.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  /* Celebration animation */
+  @keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .celebrate { animation: bounce 0.5s ease 3; }
+
+  /* Streak display */
+  .streak-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 8px 0;
+  }
+
+  .info-box {
+    background: #F0EFFF;
+    border-left: 4px solid var(--primary);
+    padding: 14px 18px;
+    border-radius: 0 12px 12px 0;
+    margin: 12px 0;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    .header h1 { font-size: 1.8rem; }
+    .card { padding: 20px; }
+    .reading-text { font-size: 1.15rem; padding: 16px; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .result-big .wpm { font-size: 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>&#x1F4DA; LeseHeld</h1>
+    <p class="subtitle">Werde zum Lese-Champion!</p>
+  </div>
+
+  <nav class="nav">
+    <button class="active" onclick="showPage('home')">&#x1F3E0; Start</button>
+    <button onclick="showPage('test')">&#x23F1;&#xFE0F; Lesetest</button>
+    <button onclick="showPage('training')">&#x1F3AF; Training</button>
+    <button onclick="showPage('stats')">&#x1F4CA; Fortschritt</button>
+  </nav>
+
+  <!-- HOME PAGE -->
+  <div id="page-home" class="page active">
+    <div class="card">
+      <h2>Willkommen, LeseHeld! &#x1F31F;</h2>
+      <p>Hier kannst du dein Lesen trainieren und immer schneller werden. Such dir einfach aus, was du machen m&ouml;chtest!</p>
+
+      <div class="home-cards">
+        <div class="home-card" onclick="showPage('test')">
+          <div class="icon">&#x23F1;&#xFE0F;</div>
+          <h3>Lesetest</h3>
+          <p>Finde heraus, wie schnell du liest!</p>
+        </div>
+        <div class="home-card" onclick="showPage('training')">
+          <div class="icon">&#x1F3AF;</div>
+          <h3>Lese-Training</h3>
+          <p>Trainiere mit W&ouml;rtern, die aufleuchten!</p>
+        </div>
+        <div class="home-card" onclick="showPage('stats')">
+          <div class="icon">&#x1F4CA;</div>
+          <h3>Mein Fortschritt</h3>
+          <p>Schau, wie viel besser du geworden bist!</p>
+        </div>
+        <div class="home-card" onclick="showPage('vocab')">
+          <div class="icon">&#x1F4D6;</div>
+          <h3>Neue W&ouml;rter</h3>
+          <p>Entdecke spannende W&ouml;rter!</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="home-streak" style="display:none">
+      <div class="streak-display">
+        &#x1F525; <span id="streak-count">0</span> Tage in Folge ge&uuml;bt!
+      </div>
+    </div>
+  </div>
+
+  <!-- READING TEST PAGE -->
+  <div id="page-test" class="page">
+    <!-- Step 1: Choose text -->
+    <div id="test-choose" class="card">
+      <h2>&#x23F1;&#xFE0F; Lesetest</h2>
+      <p>W&auml;hle einen Text und lies ihn so schnell du kannst &ndash; aber pass gut auf, denn danach kommen Fragen!</p>
+
+      <div class="level-btns">
+        <button class="active" onclick="filterTexts('all', this)">Alle</button>
+        <button onclick="filterTexts('easy', this)">&#x1F7E2; Leicht</button>
+        <button onclick="filterTexts('medium', this)">&#x1F7E1; Mittel</button>
+        <button onclick="filterTexts('hard', this)">&#x1F534; Knifflig</button>
+      </div>
+
+      <div class="text-list" id="test-text-list"></div>
+    </div>
+
+    <!-- Step 2: Read -->
+    <div id="test-reading" class="card hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <h3 id="test-title"></h3>
+        <div class="timer" id="test-timer">0:00</div>
+      </div>
+      <div class="reading-text" id="test-text-content"></div>
+      <div class="info-box">
+        &#x1F4A1; <strong>Tipp:</strong> Lies sorgf&auml;ltig! Nach dem Lesen kommen Fragen zum Text.
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="finishReading()">&#x2705; Fertig gelesen!</button>
+        <button class="btn btn-outline btn-sm" onclick="cancelTest()">Abbrechen</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Quiz -->
+    <div id="test-quiz" class="card hidden">
+      <h2>&#x2753; Verst&auml;ndnis-Check</h2>
+      <p id="quiz-question" style="font-size:1.15rem;font-weight:700;color:var(--text)"></p>
+      <div id="quiz-options"></div>
+      <div id="quiz-progress" style="text-align:center;margin-top:8px;color:var(--text-light);font-weight:600"></div>
+    </div>
+
+    <!-- Step 4: Results -->
+    <div id="test-results" class="card hidden">
+      <h2>&#x1F389; Dein Ergebnis</h2>
+      <div class="result-big">
+        <div class="wpm celebrate" id="result-wpm">0</div>
+        <div class="wpm-label">W&ouml;rter pro Minute</div>
+      </div>
+      <div id="result-message" class="result-message"></div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="result-words">0</div>
+          <div class="stat-label">W&ouml;rter gelesen</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="result-time">0</div>
+          <div class="stat-label">Sekunden</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="result-quiz">0</div>
+          <div class="stat-label">Fragen richtig</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="showPage('test'); resetTest()">&#x1F504; Nochmal testen</button>
+        <button class="btn btn-success" onclick="showPage('training')">&#x1F3AF; Jetzt trainieren</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAINING PAGE -->
+  <div id="page-training" class="page">
+    <!-- Training setup -->
+    <div id="training-setup" class="card">
+      <h2>&#x1F3AF; Lese-Training</h2>
+      <p>Die W&ouml;rter leuchten nacheinander auf. Versuche mitzulesen! Du kannst die Geschwindigkeit einstellen.</p>
+
+      <div class="speed-control">
+        <label>&#x26A1; Tempo:</label>
+        <input type="range" id="speed-slider" min="40" max="200" value="80" oninput="updateSpeedDisplay()">
+        <div class="speed-value" id="speed-display">80 WPM</div>
+      </div>
+
+      <div id="suggested-speed" class="info-box hidden">
+        &#x1F4A1; Dein letztes Lesetempo war <strong><span id="last-wpm">0</span> WPM</strong>. Versuche es etwas schneller!
+      </div>
+
+      <h3 style="margin-top:20px">W&auml;hle einen Text:</h3>
+      <div class="level-btns">
+        <button class="active" onclick="filterTrainingTexts('all', this)">Alle</button>
+        <button onclick="filterTrainingTexts('easy', this)">&#x1F7E2; Leicht</button>
+        <button onclick="filterTrainingTexts('medium', this)">&#x1F7E1; Mittel</button>
+        <button onclick="filterTrainingTexts('hard', this)">&#x1F534; Knifflig</button>
+      </div>
+      <div class="text-list" id="training-text-list"></div>
+    </div>
+
+    <!-- Training active -->
+    <div id="training-active" class="card hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <h3 id="training-title"></h3>
+        <div class="speed-value" id="training-speed-label">80 WPM</div>
+      </div>
+      <div class="progress-bar">
+        <div class="fill" id="training-progress" style="width:0%"></div>
+      </div>
+      <div class="reading-text" id="training-text-content" style="font-size:1.5rem"></div>
+
+      <div class="speed-control">
+        <label>Tempo:</label>
+        <input type="range" id="training-speed-slider" min="40" max="200" value="80" oninput="adjustTrainingSpeed()">
+        <div class="speed-value" id="training-speed-display">80 WPM</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-warning" id="training-pause-btn" onclick="toggleTrainingPause()">&#x23F8;&#xFE0F; Pause</button>
+        <button class="btn btn-outline btn-sm" onclick="stopTraining()">&#x23F9;&#xFE0F; Stopp</button>
+      </div>
+    </div>
+
+    <!-- Training complete -->
+    <div id="training-done" class="card hidden">
+      <h2>&#x1F389; Super gemacht!</h2>
+      <div class="result-big">
+        <div class="wpm" id="training-result-speed">0</div>
+        <div class="wpm-label">W&ouml;rter pro Minute trainiert</div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="training-result-words">0</div>
+          <div class="stat-label">W&ouml;rter gelesen</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="training-result-time">0</div>
+          <div class="stat-label">Sekunden trainiert</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="showTrainingSetup()">&#x1F504; Weiter trainieren</button>
+        <button class="btn btn-success" onclick="showPage('test')">&#x23F1;&#xFE0F; Lesetest machen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS PAGE -->
+  <div id="page-stats" class="page">
+    <div class="card">
+      <h2>&#x1F4CA; Dein Fortschritt</h2>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="stats-tests">0</div>
+          <div class="stat-label">Tests gemacht</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stats-best-wpm">0</div>
+          <div class="stat-label">Bestes Tempo</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stats-avg-wpm">0</div>
+          <div class="stat-label">Durchschnitt</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stats-training">0</div>
+          <div class="stat-label">Min. trainiert</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>&#x1F4C8; Dein Lesetempo &uuml;ber die Zeit</h3>
+      <div class="chart-container">
+        <canvas id="wpm-chart"></canvas>
+      </div>
+      <p id="stats-empty" class="hidden" style="text-align:center">Mach deinen ersten Lesetest, um hier deine Fortschritte zu sehen!</p>
+    </div>
+
+    <div class="card">
+      <h3>&#x1F3C6; Abzeichen</h3>
+      <div id="badges-container" class="stat-grid"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-outline btn-sm" onclick="if(confirm('Wirklich alle Daten l\u00f6schen?')){localStorage.clear();location.reload();}">&#x1F5D1;&#xFE0F; Daten zur&uuml;cksetzen</button>
+    </div>
+  </div>
+
+  <!-- VOCABULARY PAGE -->
+  <div id="page-vocab" class="page">
+    <div class="card">
+      <h2>&#x1F4D6; Neue W&ouml;rter</h2>
+      <p>Hier findest du spannende W&ouml;rter aus den Texten. Tippe auf ein Wort, um die Erkl&auml;rung zu sehen!</p>
+      <div id="vocab-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// TEXTS DATABASE
+// ============================================================
+const TEXTS = [
+  {
+    id: 1,
+    title: "Der schlaue Delfin",
+    icon: "&#x1F42C;",
+    difficulty: "easy",
+    wordCount: 82,
+    text: "Delfine sind sehr schlaue Tiere. Sie leben im Meer und schwimmen in Gruppen, die man Schulen nennt. Delfine sprechen miteinander durch Klicklaute und Pfiffe. Jeder Delfin hat sogar einen eigenen Namen! Wenn ein Delfin krank ist, helfen die anderen ihm. Sie schieben ihn an die Wasseroberfläche, damit er atmen kann. Delfine spielen auch gerne. Sie reiten auf Wellen und werfen sich Seetang zu wie einen Ball. Manche Delfine benutzen sogar Schwämme als Werkzeug, um am Meeresboden nach Fischen zu suchen.",
+    questions: [
+      { q: "Wie nennt man eine Gruppe von Delfinen?", options: ["Herde", "Schule", "Rudel", "Schwarm"], correct: 1 },
+      { q: "Wie sprechen Delfine miteinander?", options: ["Durch Farben", "Durch Klicklaute und Pfiffe", "Durch Tanzen", "Gar nicht"], correct: 1 },
+      { q: "Was tun Delfine, wenn einer krank ist?", options: ["Sie schwimmen weg", "Sie helfen ihm an die Oberfläche", "Sie rufen einen Arzt", "Sie schlafen"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Wasseroberfläche", meaning: "Die oberste Schicht vom Wasser, dort wo Wasser und Luft sich treffen" },
+      { word: "Schwämme", meaning: "Weiche Tiere, die am Meeresboden leben und wie ein Küchenschwamm aussehen" },
+      { word: "Werkzeug", meaning: "Ein Gegenstand, den man benutzt, um eine Aufgabe leichter zu erledigen" }
+    ]
+  },
+  {
+    id: 2,
+    title: "Abenteuer im Regenwald",
+    icon: "&#x1F333;",
+    difficulty: "medium",
+    wordCount: 95,
+    text: "Der Regenwald ist wie ein riesiges grünes Haus mit vielen Stockwerken. Ganz unten auf dem Boden ist es dunkel und feucht. Dort leben Ameisen, Käfer und Frösche. In der Mitte klettern Affen von Ast zu Ast und suchen nach Früchten. Ganz oben, in den Baumkronen, fliegen bunte Papageien und Tukane. Im Regenwald regnet es fast jeden Tag. Die Bäume sind so hoch wie Hochhäuser. Manche Bäume sind über hundert Jahre alt! Der Regenwald ist wichtig für unsere Erde, weil die Bäume die Luft sauber machen. Leider werden jeden Tag Bäume gefällt, deshalb müssen wir den Regenwald schützen.",
+    questions: [
+      { q: "Womit wird der Regenwald verglichen?", options: ["Mit einem Zoo", "Mit einem grünen Haus", "Mit einem Schwimmbad", "Mit einer Schule"], correct: 1 },
+      { q: "Was machen die Bäume im Regenwald?", options: ["Sie singen", "Sie machen die Luft sauber", "Sie tanzen", "Sie schlafen"], correct: 1 },
+      { q: "Welche Tiere leben in den Baumkronen?", options: ["Frösche", "Ameisen", "Papageien und Tukane", "Fische"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Baumkronen", meaning: "Der oberste Teil eines Baumes mit allen Blättern und Ästen" },
+      { word: "feucht", meaning: "Ein bisschen nass, nicht ganz trocken" },
+      { word: "gefällt", meaning: "Wenn ein Baum absichtlich umgeschnitten wird" }
+    ]
+  },
+  {
+    id: 3,
+    title: "Die Reise zum Mond",
+    icon: "&#x1F319;",
+    difficulty: "medium",
+    wordCount: 103,
+    text: "Im Jahr 1969 flogen zum ersten Mal Menschen zum Mond. Die Astronauten hießen Neil Armstrong, Buzz Aldrin und Michael Collins. Sie flogen mit einer riesigen Rakete namens Saturn V ins Weltall. Die Reise dauerte drei Tage! Als Neil Armstrong als erster Mensch den Mond betrat, sagte er einen berühmten Satz. Auf dem Mond gibt es keine Luft und kein Wasser. Deshalb mussten die Astronauten spezielle Anzüge tragen. Auf dem Mond wiegt man nur ein Sechstel von dem, was man auf der Erde wiegt. Man könnte dort also viel höher springen! Die Astronauten sammelten Steine und machten Fotos. Dann flogen sie sicher zurück zur Erde.",
+    questions: [
+      { q: "In welchem Jahr flogen Menschen zum ersten Mal zum Mond?", options: ["1959", "1969", "1979", "1989"], correct: 1 },
+      { q: "Wie lange dauerte die Reise zum Mond?", options: ["Einen Tag", "Drei Tage", "Eine Woche", "Einen Monat"], correct: 1 },
+      { q: "Warum brauchten die Astronauten spezielle Anzüge?", options: ["Weil es dort kalt ist", "Weil es dort keine Luft gibt", "Weil es dort regnet", "Weil es dort dunkel ist"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Astronauten", meaning: "Menschen, die ins Weltall fliegen" },
+      { word: "Saturn V", meaning: "Der Name der riesigen Rakete, die zum Mond flog" },
+      { word: "ein Sechstel", meaning: "Wenn man etwas in sechs gleiche Teile teilt, ist ein Teil davon ein Sechstel" }
+    ]
+  },
+  {
+    id: 4,
+    title: "Geheimnisse der Bienen",
+    icon: "&#x1F41D;",
+    difficulty: "easy",
+    wordCount: 78,
+    text: "Bienen sind fleißige kleine Tiere. In einem Bienenstock leben bis zu 60.000 Bienen zusammen. Die Königin ist die wichtigste Biene. Sie legt jeden Tag bis zu 2.000 Eier! Die Arbeiterbienen sammeln Nektar von Blumen und machen daraus Honig. Wusstest du, dass eine Biene für ein Glas Honig ungefähr 90.000 Kilometer fliegen muss? Das ist mehr als zweimal um die Erde! Bienen können auch tanzen. Mit ihrem Schwänzeltanz zeigen sie anderen Bienen, wo die besten Blumen sind.",
+    questions: [
+      { q: "Wie viele Bienen leben in einem Bienenstock?", options: ["Bis zu 600", "Bis zu 6.000", "Bis zu 60.000", "Bis zu 600.000"], correct: 2 },
+      { q: "Was machen Arbeiterbienen mit Nektar?", options: ["Sie trinken ihn", "Sie machen Honig daraus", "Sie werfen ihn weg", "Sie malen damit"], correct: 1 },
+      { q: "Was zeigt der Schwänzeltanz?", options: ["Dass die Biene müde ist", "Wo die besten Blumen sind", "Dass es regnet", "Dass die Königin kommt"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Nektar", meaning: "Süßer Saft, den Blumen herstellen, um Bienen anzulocken" },
+      { word: "Schwänzeltanz", meaning: "Ein besonderer Tanz der Bienen, mit dem sie sich verständigen" },
+      { word: "Königin", meaning: "Die wichtigste Biene im Stock, die alle Eier legt" }
+    ]
+  },
+  {
+    id: 5,
+    title: "Vulkane – Feuer aus der Erde",
+    icon: "&#x1F30B;",
+    difficulty: "hard",
+    wordCount: 112,
+    text: "Tief unter unseren Füßen ist die Erde glühend heiß. Dort gibt es flüssiges Gestein, das man Magma nennt. Wenn der Druck zu groß wird, bricht ein Vulkan aus. Das Magma schießt als Lava aus dem Vulkan heraus. Dabei entstehen riesige Aschewolken, die bis in den Himmel reichen. Der berühmteste Vulkanausbruch passierte im Jahr 79 nach Christus, als der Vesuv in Italien die Stadt Pompeji unter Asche begrub. Heute können Wissenschaftler Vulkane beobachten und die Menschen rechtzeitig warnen. Manche Vulkane sind aber auch nützlich. Die heiße Erde in ihrer Nähe liefert Energie, die man Geothermie nennt. Auf Island zum Beispiel heizen viele Menschen ihre Häuser mit dieser Erdwärme. Weltweit gibt es etwa 1.500 aktive Vulkane.",
+    questions: [
+      { q: "Wie nennt man flüssiges Gestein unter der Erde?", options: ["Lava", "Magma", "Granit", "Sand"], correct: 1 },
+      { q: "Was passierte im Jahr 79 nach Christus?", options: ["Ein Erdbeben in Rom", "Der Vesuv begrub Pompeji", "Ein Vulkan entstand", "Island wurde entdeckt"], correct: 1 },
+      { q: "Was ist Geothermie?", options: ["Ein Vulkan", "Energie aus der heißen Erde", "Ein Land", "Eine Wolkenart"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Magma", meaning: "Heißes, flüssiges Gestein tief unter der Erde" },
+      { word: "Geothermie", meaning: "Energie und Wärme, die aus dem heißen Inneren der Erde kommt" },
+      { word: "aktive Vulkane", meaning: "Vulkane, die noch ausbrechen können" }
+    ]
+  },
+  {
+    id: 6,
+    title: "Die Welt der Dinosaurier",
+    icon: "&#x1F996;",
+    difficulty: "medium",
+    wordCount: 98,
+    text: "Vor vielen Millionen Jahren lebten Dinosaurier auf der Erde. Es gab winzig kleine und riesengroße Dinosaurier. Der Tyrannosaurus Rex war ein gefährlicher Jäger mit scharfen Zähnen. Der Brachiosaurus war so groß wie ein Haus und fraß nur Pflanzen. Manche Dinosaurier hatten Federn wie Vögel. Wissenschaftler glauben, dass die heutigen Vögel von den Dinosauriern abstammen. Vor etwa 66 Millionen Jahren trafen ein riesiger Asteroid die Erde. Es wurde so dunkel und kalt, dass die meisten Dinosaurier starben. Heute finden Forscher ihre Knochen in der Erde. Diese versteinerten Knochen nennt man Fossilien.",
+    questions: [
+      { q: "Was fraß der Brachiosaurus?", options: ["Fleisch", "Fische", "Pflanzen", "Insekten"], correct: 2 },
+      { q: "Warum starben die Dinosaurier aus?", options: ["Es war zu heiß", "Ein Asteroid traf die Erde", "Sie hatten kein Wasser", "Sie waren zu groß"], correct: 1 },
+      { q: "Was sind Fossilien?", options: ["Lebende Tiere", "Versteinerte Knochen", "Pflanzen", "Werkzeuge"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Asteroid", meaning: "Ein großer Felsbrocken, der durchs Weltall fliegt" },
+      { word: "Fossilien", meaning: "Versteinerte Überreste von Tieren oder Pflanzen aus einer sehr alten Zeit" },
+      { word: "abstammen", meaning: "Von früheren Lebewesen herkommen, verwandt sein mit" }
+    ]
+  },
+  {
+    id: 7,
+    title: "Wie funktioniert ein Regenbogen?",
+    icon: "&#x1F308;",
+    difficulty: "easy",
+    wordCount: 74,
+    text: "Ein Regenbogen entsteht, wenn die Sonne scheint und es gleichzeitig regnet. Das Sonnenlicht sieht weiß aus, besteht aber aus vielen Farben. Wenn das Licht durch einen Regentropfen fliegt, wird es in seine Farben aufgeteilt. So entstehen die Farben Rot, Orange, Gelb, Grün, Blau und Violett. Ein Regenbogen ist eigentlich ein ganzer Kreis! Vom Boden aus sehen wir aber nur den halben Bogen. Aus einem Flugzeug kann man manchmal einen kompletten Regenbogen-Kreis sehen.",
+    questions: [
+      { q: "Was braucht man für einen Regenbogen?", options: ["Wind und Schnee", "Sonne und Regen", "Mond und Sterne", "Wolken und Nebel"], correct: 1 },
+      { q: "Welche Form hat ein Regenbogen wirklich?", options: ["Ein Dreieck", "Ein Halbkreis", "Ein ganzer Kreis", "Ein Viereck"], correct: 2 },
+      { q: "Was passiert mit dem Licht im Regentropfen?", options: ["Es verschwindet", "Es wird wärmer", "Es wird in Farben aufgeteilt", "Es wird lauter"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Sonnenlicht", meaning: "Das helle Licht, das von der Sonne kommt" },
+      { word: "aufgeteilt", meaning: "In mehrere Teile getrennt" },
+      { word: "Violett", meaning: "Eine Farbe zwischen Blau und Lila" }
+    ]
+  },
+  {
+    id: 8,
+    title: "Tiefsee-Abenteuer",
+    icon: "&#x1F30A;",
+    difficulty: "hard",
+    wordCount: 108,
+    text: "Die Tiefsee ist der dunkelste Ort auf unserer Erde. Ab einer Tiefe von etwa 1.000 Metern dringt kein Sonnenlicht mehr durch das Wasser. Trotzdem leben dort erstaunliche Tiere. Der Anglerfisch trägt eine leuchtende Laterne auf dem Kopf, mit der er Beute anlockt. Riesenkalmare können bis zu 13 Meter lang werden und haben die größten Augen im ganzen Tierreich. In der Tiefsee gibt es auch heiße Quellen auf dem Meeresboden. Sie heißen Schwarze Raucher, weil dunkles, heißes Wasser aus ihnen herausströmt. Um diese Quellen herum leben besondere Würmer und Krebse, die ohne Sonnenlicht überleben können. Menschen können die Tiefsee nur in speziellen U-Booten erforschen, weil der Wasserdruck dort unten unglaublich stark ist.",
+    questions: [
+      { q: "Ab welcher Tiefe gibt es kein Sonnenlicht mehr?", options: ["100 Meter", "500 Meter", "1.000 Meter", "10.000 Meter"], correct: 2 },
+      { q: "Was sind Schwarze Raucher?", options: ["Dunkle Fische", "Heiße Quellen am Meeresboden", "Vulkane", "U-Boote"], correct: 1 },
+      { q: "Warum brauchen Menschen spezielle U-Boote?", options: ["Weil es dunkel ist", "Weil es dort Haie gibt", "Wegen des starken Wasserdrucks", "Weil das Wasser salzig ist"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Anglerfisch", meaning: "Ein Fisch der Tiefsee, der eine leuchtende Angel auf dem Kopf hat" },
+      { word: "Riesenkalmare", meaning: "Sehr große Tintenfische mit langen Armen" },
+      { word: "Wasserdruck", meaning: "Die Kraft, mit der das Wasser auf alles drückt, was tief unten ist" }
+    ]
+  },
+  {
+    id: 9,
+    title: "Das Leben einer Raupe",
+    icon: "&#x1F98B;",
+    difficulty: "easy",
+    wordCount: 85,
+    text: "Eine Raupe beginnt ihr Leben als winziges Ei auf einem Blatt. Wenn sie schlüpft, hat sie nur eines im Sinn: fressen! Die kleine Raupe frisst Blätter, den ganzen Tag lang. Dabei wächst sie und wächst sie. Wenn sie groß genug ist, spinnt sie sich in einen Kokon ein. In diesem Kokon passiert etwas Wunderbares. Die Raupe verwandelt sich! Nach einigen Wochen öffnet sich der Kokon und ein wunderschöner Schmetterling kommt heraus. Er breitet seine bunten Flügel aus und fliegt davon. Diese Verwandlung nennt man Metamorphose.",
+    questions: [
+      { q: "Was macht die Raupe den ganzen Tag?", options: ["Schlafen", "Spielen", "Fressen", "Schwimmen"], correct: 2 },
+      { q: "Was ist ein Kokon?", options: ["Ein Nest", "Eine Hülle, in der sich die Raupe verwandelt", "Ein Blatt", "Ein Ei"], correct: 1 },
+      { q: "Wie nennt man die Verwandlung von Raupe zu Schmetterling?", options: ["Mutation", "Evolution", "Metamorphose", "Transformation"], correct: 2 }
+    ],
+    vocab: [
+      { word: "schlüpft", meaning: "Aus einem Ei herauskommen" },
+      { word: "Kokon", meaning: "Eine Hülle aus Fäden, die sich die Raupe selbst spinnt" },
+      { word: "Metamorphose", meaning: "Eine große Verwandlung, bei der ein Tier eine ganz neue Form bekommt" }
+    ]
+  },
+  {
+    id: 10,
+    title: "Erfindungen, die die Welt veränderten",
+    icon: "&#x1F4A1;",
+    difficulty: "hard",
+    wordCount: 115,
+    text: "Viele Dinge, die wir jeden Tag benutzen, mussten erst erfunden werden. Vor über 5.000 Jahren erfanden Menschen das Rad. Damit konnten sie schwere Sachen viel leichter transportieren. Johannes Gutenberg erfand um 1450 den Buchdruck. Dadurch konnten Bücher schnell hergestellt werden und viel mehr Menschen lernten lesen. Im Jahr 1876 erfand Alexander Graham Bell das Telefon. Zum ersten Mal konnten Menschen über weite Entfernungen miteinander sprechen! Die Brüder Wright bauten 1903 das erste Flugzeug. Ihr erster Flug dauerte nur 12 Sekunden. Heute fliegen Flugzeuge um die ganze Welt. Tim Berners-Lee erfand 1989 das World Wide Web. Ohne diese Erfindung gäbe es kein Internet, wie wir es kennen. Jede dieser Erfindungen hat das Leben der Menschen grundlegend verändert.",
+    questions: [
+      { q: "Wer erfand den Buchdruck?", options: ["Alexander Bell", "Die Brüder Wright", "Johannes Gutenberg", "Tim Berners-Lee"], correct: 2 },
+      { q: "Wie lange dauerte der erste Flug der Brüder Wright?", options: ["12 Sekunden", "12 Minuten", "1 Stunde", "1 Tag"], correct: 0 },
+      { q: "Was erfand Tim Berners-Lee?", options: ["Das Telefon", "Das Flugzeug", "Das Rad", "Das World Wide Web"], correct: 3 }
+    ],
+    vocab: [
+      { word: "transportieren", meaning: "Etwas von einem Ort zum anderen bringen" },
+      { word: "Entfernungen", meaning: "Wie weit zwei Orte voneinander weg sind" },
+      { word: "grundlegend", meaning: "Sehr wichtig und vollständig, von Grund auf" }
+    ]
+  },
+  {
+    id: 11,
+    title: "Hunde – unsere besten Freunde",
+    icon: "&#x1F436;",
+    difficulty: "easy",
+    wordCount: 80,
+    text: "Hunde sind seit tausenden Jahren die besten Freunde der Menschen. Es gibt über 300 verschiedene Hunderassen. Manche sind winzig klein wie der Chihuahua, andere riesig wie die Deutsche Dogge. Hunde können viel besser riechen als Menschen. Ihre Nase ist etwa 40 Mal stärker als unsere! Deshalb helfen manche Hunde der Polizei beim Suchen. Andere Hunde führen blinde Menschen sicher durch die Stadt. Hunde können unsere Gefühle erkennen. Wenn du traurig bist, kommt dein Hund oft zu dir und tröstet dich. Hunde zeigen ihre Freude, indem sie mit dem Schwanz wedeln.",
+    questions: [
+      { q: "Wie viele Hunderassen gibt es ungefähr?", options: ["Über 30", "Über 100", "Über 300", "Über 1000"], correct: 2 },
+      { q: "Wie viel besser können Hunde riechen als Menschen?", options: ["5 Mal besser", "10 Mal besser", "40 Mal besser", "100 Mal besser"], correct: 2 },
+      { q: "Wie zeigen Hunde ihre Freude?", options: ["Sie bellen laut", "Sie wedeln mit dem Schwanz", "Sie springen hoch", "Sie legen sich hin"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Hunderassen", meaning: "Verschiedene Arten von Hunden, die unterschiedlich aussehen" },
+      { word: "blinde Menschen", meaning: "Menschen, die nichts sehen können" },
+      { word: "Gefühle erkennen", meaning: "Verstehen, ob jemand fröhlich, traurig oder wütend ist" }
+    ]
+  },
+  {
+    id: 12,
+    title: "Das Geheimnis der Pyramiden",
+    icon: "&#x1F3DB;&#xFE0F;",
+    difficulty: "hard",
+    wordCount: 105,
+    text: "Die Pyramiden in Ägypten wurden vor über 4.500 Jahren gebaut. Die größte Pyramide ist die Cheops-Pyramide. Sie ist 139 Meter hoch und besteht aus über zwei Millionen Steinblöcken! Jeder Block wiegt so viel wie ein Auto. Forscher rätseln noch heute, wie die alten Ägypter diese schweren Steine nach oben gebracht haben. Wahrscheinlich benutzten sie Rampen und Seile. Die Pyramiden waren Gräber für die Pharaonen, die Könige von Ägypten. Im Inneren der Pyramiden gab es Kammern mit goldenen Schätzen und Malereien an den Wänden. Die Ägypter glaubten, dass die Pharaonen diese Dinge im nächsten Leben brauchen würden. Auch die Sphinx, eine riesige Figur mit Löwenkörper und Menschenkopf, bewacht die Pyramiden.",
+    questions: [
+      { q: "Wie alt sind die Pyramiden ungefähr?", options: ["1.000 Jahre", "2.500 Jahre", "4.500 Jahre", "10.000 Jahre"], correct: 2 },
+      { q: "Wofür wurden die Pyramiden gebaut?", options: ["Als Häuser", "Als Schulen", "Als Gräber für Pharaonen", "Als Tempel"], correct: 2 },
+      { q: "Was ist die Sphinx?", options: ["Eine Pyramide", "Ein Pharao", "Eine Figur mit Löwenkörper und Menschenkopf", "Ein Schatz"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Pharaonen", meaning: "Die Könige im alten Ägypten, die sehr viel Macht hatten" },
+      { word: "Rampen", meaning: "Schräge Flächen, über die man schwere Dinge nach oben schieben kann" },
+      { word: "Sphinx", meaning: "Eine berühmte riesige Steinfigur in Ägypten mit Löwenkörper und Menschenkopf" }
+    ]
+  }
+];
+
+// ============================================================
+// APP STATE
+// ============================================================
+let state = {
+  // Test
+  currentTestText: null,
+  testStartTime: null,
+  testTimerInterval: null,
+  testElapsedSeconds: 0,
+  quizIndex: 0,
+  quizCorrect: 0,
+
+  // Training
+  currentTrainingText: null,
+  trainingInterval: null,
+  trainingWordIndex: 0,
+  trainingPaused: false,
+  trainingStartTime: null,
+  trainingTotalPauseMs: 0,
+  trainingPauseStart: null,
+
+  // Data
+  testResults: JSON.parse(localStorage.getItem('leseHeld_testResults') || '[]'),
+  trainingSessions: JSON.parse(localStorage.getItem('leseHeld_training') || '[]'),
+  lastActivity: localStorage.getItem('leseHeld_lastActivity') || null,
+  streak: parseInt(localStorage.getItem('leseHeld_streak') || '0'),
+  learnedVocab: JSON.parse(localStorage.getItem('leseHeld_vocab') || '[]')
+};
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => {
+    if (b.textContent.includes(getNavLabel(pageId))) b.classList.add('active');
+  });
+
+  if (pageId === 'test') { renderTestTextList(); resetTest(); }
+  if (pageId === 'training') { renderTrainingTextList(); showTrainingSetup(); }
+  if (pageId === 'stats') renderStats();
+  if (pageId === 'vocab') renderVocabPage();
+  if (pageId === 'home') updateHomeStreak();
+}
+
+function getNavLabel(pageId) {
+  const map = { home: 'Start', test: 'Lesetest', training: 'Training', stats: 'Fortschritt', vocab: 'Start' };
+  return map[pageId] || '';
+}
+
+// ============================================================
+// TEXT LIST RENDERING
+// ============================================================
+function renderTextList(containerId, texts, onSelect) {
+  const container = document.getElementById(containerId);
+  const diffLabels = { easy: 'Leicht', medium: 'Mittel', hard: 'Knifflig' };
+  const diffClasses = { easy: 'badge-easy', medium: 'badge-medium', hard: 'badge-hard' };
+
+  container.innerHTML = texts.map(t => `
+    <div class="text-item" onclick="${onSelect}(${t.id})">
+      <div class="text-icon">${t.icon}</div>
+      <div class="text-info">
+        <div class="text-title">${t.title}</div>
+        <div class="text-meta">${t.wordCount} Wörter</div>
+      </div>
+      <span class="text-badge ${diffClasses[t.difficulty]}">${diffLabels[t.difficulty]}</span>
+    </div>
+  `).join('');
+}
+
+function renderTestTextList(filter) {
+  const texts = filter && filter !== 'all' ? TEXTS.filter(t => t.difficulty === filter) : TEXTS;
+  renderTextList('test-text-list', texts, 'startTest');
+}
+
+function renderTrainingTextList(filter) {
+  const texts = filter && filter !== 'all' ? TEXTS.filter(t => t.difficulty === filter) : TEXTS;
+  renderTextList('training-text-list', texts, 'startTraining');
+}
+
+function filterTexts(difficulty, btn) {
+  btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTestTextList(difficulty);
+}
+
+function filterTrainingTexts(difficulty, btn) {
+  btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTrainingTextList(difficulty);
+}
+
+// ============================================================
+// READING TEST
+// ============================================================
+function startTest(textId) {
+  const text = TEXTS.find(t => t.id === textId);
+  if (!text) return;
+
+  state.currentTestText = text;
+  state.testElapsedSeconds = 0;
+  state.quizIndex = 0;
+  state.quizCorrect = 0;
+
+  document.getElementById('test-title').textContent = text.icon + ' ' + text.title;
+  document.getElementById('test-text-content').innerHTML = text.text;
+
+  showTestStep('test-reading');
+
+  state.testStartTime = Date.now();
+  state.testTimerInterval = setInterval(() => {
+    state.testElapsedSeconds = Math.floor((Date.now() - state.testStartTime) / 1000);
+    const min = Math.floor(state.testElapsedSeconds / 60);
+    const sec = state.testElapsedSeconds % 60;
+    document.getElementById('test-timer').textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+  }, 200);
+}
+
+function finishReading() {
+  clearInterval(state.testTimerInterval);
+  state.testElapsedSeconds = Math.round((Date.now() - state.testStartTime) / 1000);
+  showTestStep('test-quiz');
+  showQuizQuestion();
+}
+
+function cancelTest() {
+  clearInterval(state.testTimerInterval);
+  resetTest();
+}
+
+function resetTest() {
+  showTestStep('test-choose');
+}
+
+function showTestStep(stepId) {
+  ['test-choose', 'test-reading', 'test-quiz', 'test-results'].forEach(id => {
+    document.getElementById(id).classList.toggle('hidden', id !== stepId);
+  });
+}
+
+// Quiz
+function showQuizQuestion() {
+  const text = state.currentTestText;
+  const idx = state.quizIndex;
+  if (idx >= text.questions.length) {
+    showTestResults();
+    return;
+  }
+  const q = text.questions[idx];
+  document.getElementById('quiz-question').textContent = q.q;
+  document.getElementById('quiz-progress').textContent = `Frage ${idx + 1} von ${text.questions.length}`;
+
+  const optContainer = document.getElementById('quiz-options');
+  optContainer.innerHTML = q.options.map((opt, i) => `
+    <button class="quiz-option" onclick="answerQuiz(${i}, ${q.correct})">${opt}</button>
+  `).join('');
+}
+
+function answerQuiz(selected, correct) {
+  const btns = document.querySelectorAll('#quiz-options .quiz-option');
+  btns.forEach((btn, i) => {
+    btn.onclick = null;
+    btn.style.pointerEvents = 'none';
+    if (i === correct) btn.classList.add('correct');
+    if (i === selected && selected !== correct) btn.classList.add('wrong');
+  });
+
+  if (selected === correct) state.quizCorrect++;
+
+  setTimeout(() => {
+    state.quizIndex++;
+    showQuizQuestion();
+  }, 1200);
+}
+
+function showTestResults() {
+  const text = state.currentTestText;
+  const seconds = state.testElapsedSeconds;
+  const wpm = Math.round((text.wordCount / seconds) * 60);
+
+  document.getElementById('result-wpm').textContent = wpm;
+  document.getElementById('result-words').textContent = text.wordCount;
+  document.getElementById('result-time').textContent = seconds;
+  document.getElementById('result-quiz').textContent = `${state.quizCorrect}/${text.questions.length}`;
+
+  let msg = '';
+  let cls = '';
+  if (wpm >= 120 && state.quizCorrect >= 2) {
+    msg = '🌟 Fantastisch! Du liest super schnell und hast den Text gut verstanden!';
+    cls = 'great';
+  } else if (wpm >= 80 && state.quizCorrect >= 2) {
+    msg = '👍 Toll gemacht! Dein Lesetempo ist richtig gut!';
+    cls = 'good';
+  } else if (state.quizCorrect < 2) {
+    msg = '📖 Versuche beim nächsten Mal etwas langsamer zu lesen und genauer aufzupassen!';
+    cls = 'keep-going';
+  } else {
+    msg = '💪 Gut gemacht! Mit mehr Übung wirst du noch schneller!';
+    cls = 'keep-going';
+  }
+
+  const msgEl = document.getElementById('result-message');
+  msgEl.textContent = msg;
+  msgEl.className = 'result-message ' + cls;
+
+  // Save result
+  const result = {
+    date: new Date().toISOString(),
+    textId: text.id,
+    wpm: wpm,
+    quizScore: state.quizCorrect,
+    quizTotal: text.questions.length,
+    seconds: seconds
+  };
+  state.testResults.push(result);
+  localStorage.setItem('leseHeld_testResults', JSON.stringify(state.testResults));
+  updateStreak();
+
+  // Add vocab
+  text.vocab.forEach(v => {
+    if (!state.learnedVocab.find(lv => lv.word === v.word)) {
+      state.learnedVocab.push(v);
+    }
+  });
+  localStorage.setItem('leseHeld_vocab', JSON.stringify(state.learnedVocab));
+
+  showTestStep('test-results');
+}
+
+// ============================================================
+// TRAINING MODE
+// ============================================================
+function showTrainingSetup() {
+  document.getElementById('training-setup').classList.remove('hidden');
+  document.getElementById('training-active').classList.add('hidden');
+  document.getElementById('training-done').classList.add('hidden');
+
+  // Suggest speed based on last test
+  if (state.testResults.length > 0) {
+    const lastWpm = state.testResults[state.testResults.length - 1].wpm;
+    const suggested = Math.min(lastWpm + 10, 200);
+    document.getElementById('speed-slider').value = suggested;
+    document.getElementById('last-wpm').textContent = lastWpm;
+    document.getElementById('suggested-speed').classList.remove('hidden');
+    updateSpeedDisplay();
+  }
+}
+
+function updateSpeedDisplay() {
+  const val = document.getElementById('speed-slider').value;
+  document.getElementById('speed-display').textContent = val + ' WPM';
+}
+
+function startTraining(textId) {
+  const text = TEXTS.find(t => t.id === textId);
+  if (!text) return;
+
+  state.currentTrainingText = text;
+  state.trainingWordIndex = 0;
+  state.trainingPaused = false;
+  state.trainingTotalPauseMs = 0;
+  state.trainingPauseStart = null;
+
+  const speed = parseInt(document.getElementById('speed-slider').value);
+
+  document.getElementById('training-title').textContent = text.icon + ' ' + text.title;
+  document.getElementById('training-speed-label').textContent = speed + ' WPM';
+  document.getElementById('training-speed-slider').value = speed;
+  document.getElementById('training-speed-display').textContent = speed + ' WPM';
+  document.getElementById('training-pause-btn').textContent = '⏸️ Pause';
+
+  // Prepare words
+  const words = text.text.split(/\s+/);
+  const vocabWords = text.vocab.map(v => v.word.toLowerCase());
+
+  document.getElementById('training-text-content').innerHTML = words.map((w, i) => {
+    const clean = w.replace(/[.,!?;:]/g, '').toLowerCase();
+    const isVocab = vocabWords.includes(clean);
+    const vocabItem = isVocab ? text.vocab.find(v => v.word.toLowerCase() === clean) : null;
+    const vocabAttr = vocabItem ? ` class="word vocab-word" data-meaning="${vocabItem.meaning}"` : ' class="word"';
+    return `<span${vocabAttr} id="tw-${i}">${w}</span>`;
+  }).join(' ');
+
+  document.getElementById('training-setup').classList.add('hidden');
+  document.getElementById('training-active').classList.remove('hidden');
+  document.getElementById('training-done').classList.add('hidden');
+
+  state.trainingStartTime = Date.now();
+
+  // Start highlighting
+  const msPerWord = 60000 / speed;
+  runTrainingStep(words.length, msPerWord);
+}
+
+function runTrainingStep(totalWords, msPerWord) {
+  if (state.trainingInterval) clearTimeout(state.trainingInterval);
+
+  function step() {
+    if (state.trainingPaused) {
+      state.trainingInterval = setTimeout(step, 100);
+      return;
+    }
+
+    if (state.trainingWordIndex >= totalWords) {
+      finishTraining();
+      return;
+    }
+
+    // Remove previous highlights
+    const prev = document.getElementById('tw-' + (state.trainingWordIndex - 1));
+    if (prev) { prev.classList.remove('highlight'); prev.classList.add('read'); }
+
+    // Highlight current
+    const cur = document.getElementById('tw-' + state.trainingWordIndex);
+    if (cur) {
+      cur.classList.add('highlight');
+      cur.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Update progress
+    const pct = ((state.trainingWordIndex + 1) / totalWords * 100).toFixed(1);
+    document.getElementById('training-progress').style.width = pct + '%';
+
+    state.trainingWordIndex++;
+
+    // Recalculate msPerWord from slider
+    const currentSpeed = parseInt(document.getElementById('training-speed-slider').value);
+    const currentMs = 60000 / currentSpeed;
+    state.trainingInterval = setTimeout(step, currentMs);
+  }
+
+  step();
+}
+
+function toggleTrainingPause() {
+  state.trainingPaused = !state.trainingPaused;
+  const btn = document.getElementById('training-pause-btn');
+  if (state.trainingPaused) {
+    btn.textContent = '▶️ Weiter';
+    state.trainingPauseStart = Date.now();
+  } else {
+    btn.textContent = '⏸️ Pause';
+    if (state.trainingPauseStart) {
+      state.trainingTotalPauseMs += Date.now() - state.trainingPauseStart;
+      state.trainingPauseStart = null;
+    }
+  }
+}
+
+function adjustTrainingSpeed() {
+  const val = document.getElementById('training-speed-slider').value;
+  document.getElementById('training-speed-display').textContent = val + ' WPM';
+  document.getElementById('training-speed-label').textContent = val + ' WPM';
+}
+
+function stopTraining() {
+  if (state.trainingInterval) clearTimeout(state.trainingInterval);
+  showTrainingSetup();
+}
+
+function finishTraining() {
+  if (state.trainingInterval) clearTimeout(state.trainingInterval);
+
+  let pauseMs = state.trainingTotalPauseMs;
+  if (state.trainingPaused && state.trainingPauseStart) {
+    pauseMs += Date.now() - state.trainingPauseStart;
+  }
+
+  const totalMs = Date.now() - state.trainingStartTime - pauseMs;
+  const totalSeconds = Math.round(totalMs / 1000);
+  const text = state.currentTrainingText;
+  const speed = parseInt(document.getElementById('training-speed-slider').value);
+
+  document.getElementById('training-result-speed').textContent = speed;
+  document.getElementById('training-result-words').textContent = text.wordCount;
+  document.getElementById('training-result-time').textContent = totalSeconds;
+
+  // Save
+  const session = {
+    date: new Date().toISOString(),
+    textId: text.id,
+    speed: speed,
+    durationSeconds: totalSeconds
+  };
+  state.trainingSessions.push(session);
+  localStorage.setItem('leseHeld_training', JSON.stringify(state.trainingSessions));
+  updateStreak();
+
+  // Add vocab
+  text.vocab.forEach(v => {
+    if (!state.learnedVocab.find(lv => lv.word === v.word)) {
+      state.learnedVocab.push(v);
+    }
+  });
+  localStorage.setItem('leseHeld_vocab', JSON.stringify(state.learnedVocab));
+
+  document.getElementById('training-active').classList.add('hidden');
+  document.getElementById('training-done').classList.remove('hidden');
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function renderStats() {
+  const results = state.testResults;
+  const training = state.trainingSessions;
+
+  document.getElementById('stats-tests').textContent = results.length;
+
+  if (results.length > 0) {
+    const wpms = results.map(r => r.wpm);
+    document.getElementById('stats-best-wpm').textContent = Math.max(...wpms);
+    document.getElementById('stats-avg-wpm').textContent = Math.round(wpms.reduce((a, b) => a + b, 0) / wpms.length);
+  }
+
+  const totalTrainingMin = Math.round(training.reduce((sum, s) => sum + s.durationSeconds, 0) / 60);
+  document.getElementById('stats-training').textContent = totalTrainingMin;
+
+  // Chart
+  renderChart();
+
+  // Badges
+  renderBadges();
+}
+
+function renderChart() {
+  const canvas = document.getElementById('wpm-chart');
+  const ctx = canvas.getContext('2d');
+  const results = state.testResults;
+
+  if (results.length === 0) {
+    document.getElementById('stats-empty').classList.remove('hidden');
+    canvas.style.display = 'none';
+    return;
+  }
+  document.getElementById('stats-empty').classList.add('hidden');
+  canvas.style.display = 'block';
+
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * 2;
+  canvas.height = rect.height * 2;
+  ctx.scale(2, 2);
+  const W = rect.width;
+  const H = rect.height;
+
+  const wpms = results.map(r => r.wpm);
+  const maxWpm = Math.max(...wpms, 100);
+  const minWpm = Math.min(...wpms, 0);
+  const padding = { top: 30, right: 20, bottom: 40, left: 50 };
+  const chartW = W - padding.left - padding.right;
+  const chartH = H - padding.top - padding.bottom;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = '#E8E7F5';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = padding.top + (chartH / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(W - padding.right, y);
+    ctx.stroke();
+
+    const val = Math.round(maxWpm - (maxWpm - minWpm) * (i / 4));
+    ctx.fillStyle = '#6E6B9E';
+    ctx.font = '11px Nunito';
+    ctx.textAlign = 'right';
+    ctx.fillText(val, padding.left - 8, y + 4);
+  }
+
+  // Data points
+  if (wpms.length === 1) {
+    const x = padding.left + chartW / 2;
+    const y = padding.top + chartH - ((wpms[0] - minWpm) / (maxWpm - minWpm)) * chartH;
+    ctx.fillStyle = '#6C63FF';
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    const step = chartW / (wpms.length - 1);
+
+    // Area
+    ctx.beginPath();
+    wpms.forEach((wpm, i) => {
+      const x = padding.left + step * i;
+      const y = padding.top + chartH - ((wpm - minWpm) / (maxWpm - minWpm)) * chartH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.lineTo(padding.left + step * (wpms.length - 1), padding.top + chartH);
+    ctx.lineTo(padding.left, padding.top + chartH);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartH);
+    grad.addColorStop(0, 'rgba(108,99,255,0.2)');
+    grad.addColorStop(1, 'rgba(108,99,255,0.02)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    wpms.forEach((wpm, i) => {
+      const x = padding.left + step * i;
+      const y = padding.top + chartH - ((wpm - minWpm) / (maxWpm - minWpm)) * chartH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = '#6C63FF';
+    ctx.lineWidth = 3;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // Points
+    wpms.forEach((wpm, i) => {
+      const x = padding.left + step * i;
+      const y = padding.top + chartH - ((wpm - minWpm) / (maxWpm - minWpm)) * chartH;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#6C63FF';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Label
+      ctx.fillStyle = '#2D2B55';
+      ctx.font = 'bold 11px Nunito';
+      ctx.textAlign = 'center';
+      ctx.fillText(wpm, x, y - 12);
+    });
+  }
+
+  // X axis labels
+  ctx.fillStyle = '#6E6B9E';
+  ctx.font = '11px Nunito';
+  ctx.textAlign = 'center';
+  results.forEach((r, i) => {
+    const step = wpms.length > 1 ? chartW / (wpms.length - 1) : 0;
+    const x = padding.left + step * i;
+    const d = new Date(r.date);
+    ctx.fillText(`${d.getDate()}.${d.getMonth() + 1}.`, x, H - 10);
+  });
+
+  // Y label
+  ctx.save();
+  ctx.translate(12, padding.top + chartH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillStyle = '#6E6B9E';
+  ctx.font = 'bold 11px Nunito';
+  ctx.textAlign = 'center';
+  ctx.fillText('WPM', 0, 0);
+  ctx.restore();
+}
+
+function renderBadges() {
+  const container = document.getElementById('badges-container');
+  const results = state.testResults;
+  const training = state.trainingSessions;
+
+  const badges = [
+    { icon: '🌟', name: 'Erster Test', desc: 'Mach deinen ersten Lesetest', earned: results.length >= 1 },
+    { icon: '📚', name: 'Bücherwurm', desc: '5 Tests gemacht', earned: results.length >= 5 },
+    { icon: '🚀', name: 'Rakete', desc: '100 WPM erreicht', earned: results.some(r => r.wpm >= 100) },
+    { icon: '⚡', name: 'Blitzleser', desc: '150 WPM erreicht', earned: results.some(r => r.wpm >= 150) },
+    { icon: '🎯', name: 'Schlaukopf', desc: 'Alle Fragen richtig', earned: results.some(r => r.quizScore === r.quizTotal) },
+    { icon: '🏋️', name: 'Trainingsprofi', desc: '10 Trainings gemacht', earned: training.length >= 10 },
+    { icon: '🔥', name: 'Feuereifer', desc: '3 Tage in Folge', earned: state.streak >= 3 },
+    { icon: '🏆', name: 'Champion', desc: '7 Tage in Folge', earned: state.streak >= 7 },
+  ];
+
+  container.innerHTML = badges.map(b => `
+    <div class="stat-box" style="opacity:${b.earned ? 1 : 0.4}">
+      <div style="font-size:2rem">${b.icon}</div>
+      <div class="stat-label" style="font-weight:700;color:${b.earned ? 'var(--primary)' : 'var(--text-light)'}">${b.name}</div>
+      <div class="stat-label">${b.desc}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// VOCABULARY PAGE
+// ============================================================
+function renderVocabPage() {
+  const container = document.getElementById('vocab-list');
+  if (state.learnedVocab.length === 0) {
+    container.innerHTML = '<p style="text-align:center;padding:20px">Mach zuerst einen Lesetest oder ein Training, um neue Wörter zu entdecken!</p>';
+    return;
+  }
+
+  container.innerHTML = state.learnedVocab.map(v => `
+    <div class="text-item" style="cursor:default">
+      <div class="text-icon">📝</div>
+      <div class="text-info">
+        <div class="text-title">${v.word}</div>
+        <div class="text-meta">${v.meaning}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// STREAK
+// ============================================================
+function updateStreak() {
+  const today = new Date().toISOString().slice(0, 10);
+  const last = state.lastActivity;
+
+  if (last === today) return;
+
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  if (last === yesterday) {
+    state.streak++;
+  } else if (last !== today) {
+    state.streak = 1;
+  }
+
+  state.lastActivity = today;
+  localStorage.setItem('leseHeld_lastActivity', today);
+  localStorage.setItem('leseHeld_streak', state.streak.toString());
+}
+
+function updateHomeStreak() {
+  const el = document.getElementById('home-streak');
+  if (state.streak > 0) {
+    el.style.display = 'block';
+    document.getElementById('streak-count').textContent = state.streak;
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  renderTestTextList();
+  renderTrainingTextList();
+  updateHomeStreak();
+  updateSpeedDisplay();
+}
+
+init();
+</script>
+</body>
+</html>
