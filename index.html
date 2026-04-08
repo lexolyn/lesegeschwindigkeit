@@ -554,6 +554,92 @@
     color: var(--text);
   }
 
+  /* Read indicator on text items */
+  .text-item.already-read { background: #F6FFF9; border: 2px solid #43E97B; }
+  .text-item .read-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #1A8A4A;
+    background: #D4F7E3;
+    padding: 3px 9px;
+    border-radius: 50px;
+    margin-left: 6px;
+    white-space: nowrap;
+  }
+  .text-item .text-badges { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+
+  /* Wort-Blitz feature */
+  .wortblitz-word {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--primary);
+    text-align: center;
+    padding: 40px 20px;
+    letter-spacing: 1px;
+    min-height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F0EFFF;
+    border-radius: var(--radius);
+    transition: opacity 0.15s;
+  }
+  .wortblitz-word.hidden-word { opacity: 0; }
+  .wortblitz-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .wb-option {
+    padding: 14px 10px;
+    border: 2px solid #E8E7F5;
+    border-radius: 14px;
+    background: white;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+    word-break: break-word;
+  }
+  .wb-option:hover { border-color: var(--primary); background: #F0EFFF; }
+  .wb-option.wb-correct { background: #D4F7E3; border-color: #43E97B; color: #1A8A4A; }
+  .wb-option.wb-wrong { background: #FFE5EA; border-color: var(--secondary); color: #c0392b; }
+  .wb-progress { text-align: center; font-size: 0.9rem; color: var(--text-light); font-weight: 700; margin-bottom: 8px; }
+  .wb-score-big {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+  }
+  .wb-flash-bar {
+    height: 6px;
+    background: #E8E7F5;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .wb-flash-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 6px;
+    transition: width linear;
+  }
+  .wb-meaning {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    text-align: center;
+    margin-top: 8px;
+    min-height: 24px;
+  }
+  .wb-settings { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+  .wb-settings label { font-weight: 700; font-size: 0.9rem; }
+
   /* Responsive */
   @media (max-width: 500px) {
     .header h1 { font-size: 1.8rem; }
@@ -561,6 +647,8 @@
     .reading-text { font-size: 1.15rem; padding: 16px; }
     .stat-grid { grid-template-columns: 1fr 1fr; }
     .result-big .wpm { font-size: 3rem; }
+    .wortblitz-word { font-size: 1.7rem; padding: 28px 12px; }
+    .wortblitz-options { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
@@ -576,6 +664,7 @@
     <button class="active" onclick="showPage('home')">&#x1F3E0; Start</button>
     <button onclick="showPage('test')">&#x23F1;&#xFE0F; Lesetest</button>
     <button onclick="showPage('training')">&#x1F3AF; Training</button>
+    <button onclick="showPage('wortblitz')">&#x26A1; Wort-Blitz</button>
     <button onclick="showPage('stats')">&#x1F4CA; Fortschritt</button>
   </nav>
 
@@ -600,6 +689,11 @@
           <div class="icon">&#x1F4CA;</div>
           <h3>Mein Fortschritt</h3>
           <p>Schau, wie viel besser du geworden bist!</p>
+        </div>
+        <div class="home-card" onclick="showPage('wortblitz')">
+          <div class="icon">&#x26A1;</div>
+          <h3>Wort-Blitz</h3>
+          <p>Lies schwierige W&ouml;rter blitzschnell!</p>
         </div>
         <div class="home-card" onclick="showPage('vocab')">
           <div class="icon">&#x1F4D6;</div>
@@ -808,6 +902,70 @@
       <h2>&#x1F4D6; Neue W&ouml;rter</h2>
       <p>Hier findest du spannende W&ouml;rter aus den Texten. Tippe auf ein Wort, um die Erkl&auml;rung zu sehen!</p>
       <div id="vocab-list"></div>
+    </div>
+  </div>
+
+  <!-- WORT-BLITZ PAGE -->
+  <div id="page-wortblitz" class="page">
+    <!-- Start screen -->
+    <div id="wb-start" class="card">
+      <h2>&#x26A1; Wort-Blitz</h2>
+      <p>Ein schwieriges Wort erscheint kurz &ndash; kannst du es genau lesen? Finde danach das richtige Wort aus den vier M&ouml;glichkeiten. Trainiert Aufmerksamkeit und genaues Lesen!</p>
+      <div class="wb-settings">
+        <label>&#x23F1;&#xFE0F; Anzeigedauer:</label>
+        <select id="wb-duration" style="padding:8px 14px;border-radius:10px;border:2px solid #E8E7F5;font-family:inherit;font-weight:700;font-size:0.95rem;cursor:pointer">
+          <option value="3000">3 Sekunden (leicht)</option>
+          <option value="2000" selected>2 Sekunden (normal)</option>
+          <option value="1000">1 Sekunde (schwer)</option>
+          <option value="500">0,5 Sekunden (Profi)</option>
+        </select>
+      </div>
+      <div class="wb-settings">
+        <label>&#x1F4CB; Runden:</label>
+        <select id="wb-rounds" style="padding:8px 14px;border-radius:10px;border:2px solid #E8E7F5;font-family:inherit;font-weight:700;font-size:0.95rem;cursor:pointer">
+          <option value="5">5 W&ouml;rter</option>
+          <option value="10" selected>10 W&ouml;rter</option>
+          <option value="15">15 W&ouml;rter</option>
+          <option value="20">20 W&ouml;rter</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="startWortBlitz()">&#x26A1; Los geht&rsquo;s!</button>
+      </div>
+      <div id="wb-highscore-box" class="info-box hidden">
+        &#x1F3C6; Bestes Ergebnis: <strong><span id="wb-highscore">0</span></strong> Punkte
+      </div>
+    </div>
+
+    <!-- Playing screen -->
+    <div id="wb-playing" class="card hidden">
+      <div class="wb-progress" id="wb-progress-label">Wort 1 von 10</div>
+      <div class="wb-flash-bar"><div class="wb-flash-fill" id="wb-flash-fill" style="width:100%"></div></div>
+      <div class="wortblitz-word" id="wb-word-display">???</div>
+      <div class="wb-meaning" id="wb-meaning-hint"></div>
+      <div class="wortblitz-options hidden" id="wb-options"></div>
+    </div>
+
+    <!-- Results screen -->
+    <div id="wb-results" class="card hidden">
+      <h2>&#x1F389; Wort-Blitz Ergebnis</h2>
+      <div class="wb-score-big" id="wb-score-display">0/10</div>
+      <div id="wb-result-message" class="result-message" style="margin:12px 0"></div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="wb-correct-count">0</div>
+          <div class="stat-label">Richtig</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="wb-wrong-count">0</div>
+          <div class="stat-label">Falsch</div>
+        </div>
+      </div>
+      <div id="wb-review" style="margin-top:12px"></div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="startWortBlitz()">&#x26A1; Nochmal!</button>
+        <button class="btn btn-outline btn-sm" onclick="showWbStart()">Einstellungen</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1124,6 +1282,222 @@ const TEXTS = [
     ]
   },
   {
+    id: 19,
+    title: "Elefanten – die größten Landtiere",
+    icon: "&#x1F418;",
+    difficulty: "easy",
+    wordCount: 88,
+    text: "Elefanten sind die größten Tiere, die an Land leben. Ein ausgewachsener Elefant kann so schwer sein wie fünf Autos! Es gibt zwei Arten: den afrikanischen und den asiatischen Elefanten. Afrikanische Elefanten haben größere Ohren, die aussehen wie der Kontinent Afrika. Mit ihrem langen Rüssel können Elefanten trinken, riechen, Dinge greifen und sogar malen! Elefanten leben in Gruppen und passen aufeinander auf. Die älteste Kuh ist die Anführerin. Elefanten sind sehr klug und haben ein gutes Gedächtnis. Sie erkennen sich selbst im Spiegel – das können nur sehr wenige Tiere!",
+    questions: [
+      { q: "Welche zwei Elefantenarten gibt es?", options: ["Indische und chinesische", "Afrikanische und asiatische", "Große und kleine", "Wilde und zahme"], correct: 1 },
+      { q: "Was ist die Anführerin einer Elefantengruppe?", options: ["Das stärkste Männchen", "Die älteste Kuh", "Der größte Elefant", "Das jüngste Tier"], correct: 1 },
+      { q: "Was können Elefanten mit ihrem Rüssel NICHT tun?", options: ["Trinken", "Fliegen", "Riechen", "Greifen"], correct: 1 }
+    ],
+    vocab: [
+      { word: "ausgewachsen", meaning: "Vollständig groß und erwachsen, fertig gewachsen" },
+      { word: "Gedächtnis", meaning: "Die Fähigkeit, sich Dinge zu merken und zu erinnern" },
+      { word: "Anführerin", meaning: "Das Tier oder die Person, die eine Gruppe leitet" }
+    ]
+  },
+  {
+    id: 20,
+    title: "Wie entsteht Schnee?",
+    icon: "&#x2744;&#xFE0F;",
+    difficulty: "easy",
+    wordCount: 76,
+    text: "Schnee entsteht hoch oben in den Wolken, wo es sehr kalt ist. Winzige Wassertröpfchen frieren dort zu Eiskristallen. Diese Kristalle wachsen und werden zu Schneeflocken. Jede Schneeflocke hat sechs Seiten und sieht anders aus als alle anderen. Kein Mensch hat je zwei gleiche Schneeflocken gefunden! Wenn die Flocken schwer genug sind, fallen sie zur Erde. Schnee besteht zu 90 Prozent aus Luft – deshalb ist er so leicht und fluffig. Schneeflocken fallen sehr langsam, nur etwa einen Meter pro Sekunde.",
+    questions: [
+      { q: "Wie viele Seiten hat eine Schneeflocke?", options: ["Vier", "Fünf", "Sechs", "Acht"], correct: 2 },
+      { q: "Woraus besteht Schnee hauptsächlich?", options: ["Aus Eis", "Aus Wasser", "Aus Luft", "Aus Staub"], correct: 2 },
+      { q: "Wie schnell fällt eine Schneeflocke?", options: ["10 Meter pro Sekunde", "5 Meter pro Sekunde", "1 Meter pro Sekunde", "0,1 Meter pro Sekunde"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Eiskristalle", meaning: "Winzige, regelmäßig geformte Eisstücke" },
+      { word: "Schneeflocken", meaning: "Aus Eiskristallen zusammengewachsene Schneestücke" },
+      { word: "fluffig", meaning: "Weich und leicht wie Watte" }
+    ]
+  },
+  {
+    id: 21,
+    title: "Vögel und ihre Nester",
+    icon: "&#x1F426;",
+    difficulty: "easy",
+    wordCount: 81,
+    text: "Vögel bauen Nester, um ihre Eier zu legen und ihre Küken aufzuziehen. Jede Vogelart baut ein anderes Nest. Schwalben bauen ihre Nester aus Schlamm unter Dachvorsprüngen. Der Webervogel flicht kunstvolle Nester aus Gras, die wie kleine Taschen aussehen. Adler bauen riesige Horste aus Ästen, die meterhoch werden können. Manche Vögel bauen gar keine Nester: Der Kuckuck legt seine Eier einfach in fremde Nester! Andere Vögel nisten in Baumhöhlen. Nester dienen nicht nur als Geburtsstätte, sondern auch als Schlafplatz.",
+    questions: [
+      { q: "Woraus bauen Schwalben ihre Nester?", options: ["Aus Gras", "Aus Zweigen", "Aus Schlamm", "Aus Federn"], correct: 2 },
+      { q: "Was macht der Kuckuck mit seinen Eiern?", options: ["Er versteckt sie im Boden", "Er legt sie in fremde Nester", "Er rollt sie ins Wasser", "Er vergräbt sie unter Laub"], correct: 1 },
+      { q: "Wie nennt man das Nest eines Adlers?", options: ["Höhle", "Bau", "Horst", "Kobel"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Dachvorsprünge", meaning: "Der Teil des Daches, der über die Hauswand herausragt" },
+      { word: "flicht", meaning: "Fäden oder dünne Stäbe ineinander verweben" },
+      { word: "Geburtsstätte", meaning: "Der Ort, an dem junge Tiere oder Menschen geboren werden" }
+    ]
+  },
+  {
+    id: 22,
+    title: "Die Sonne – unser Stern",
+    icon: "&#x2600;&#xFE0F;",
+    difficulty: "easy",
+    wordCount: 74,
+    text: "Die Sonne ist ein riesiger Stern aus heißem Gas. Sie ist so groß, dass über eine Million Erden darin passen würden! Die Sonne ist für uns das wichtigste Gestirn: Sie gibt uns Licht und Wärme. Ohne Sonne würde auf der Erde kein Leben existieren. Pflanzen brauchen Sonnenlicht zum Wachsen. Menschen und Tiere brauchen die Sonne, um Vitamin D zu bilden. Das Sonnenlicht braucht acht Minuten, um von der Sonne bis zur Erde zu reisen. Die Sonne ist schon seit etwa fünf Milliarden Jahren alt!",
+    questions: [
+      { q: "Wie lange ist das Sonnenlicht bis zur Erde unterwegs?", options: ["1 Minute", "8 Minuten", "1 Stunde", "1 Tag"], correct: 1 },
+      { q: "Wie alt ist die Sonne ungefähr?", options: ["500 Millionen Jahre", "1 Milliarde Jahre", "5 Milliarden Jahre", "100 Milliarden Jahre"], correct: 2 },
+      { q: "Was produzieren Menschen mithilfe der Sonne?", options: ["Sauerstoff", "Vitamin D", "Wasser", "Energie"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Gestirn", meaning: "Ein Himmelskörper wie Sterne, Planeten oder der Mond" },
+      { word: "existieren", meaning: "Da sein, vorhanden sein, leben" },
+      { word: "Vitamin D", meaning: "Ein wichtiger Stoff für den Körper, der mit Sonnenlicht gebildet wird" }
+    ]
+  },
+  {
+    id: 23,
+    title: "Haie – Räuber der Meere",
+    icon: "&#x1F988;",
+    difficulty: "medium",
+    wordCount: 96,
+    text: "Haie sind seit über 450 Millionen Jahren auf der Erde – sie sind älter als die Dinosaurier! Es gibt über 500 verschiedene Haiarten. Der Walhai ist der größte Fisch der Welt und frisst nur kleine Kleinstlebewesen. Der Weiße Hai hingegen ist ein gefährlicher Jäger mit über 300 Zähnen. Wenn ein Hai einen Zahn verliert, wächst einfach ein neuer nach – das passiert tausende Male im Leben eines Hais! Haie haben besondere Sinne: Sie können die Herzschläge anderer Tiere im Wasser spüren. Haie sind für das Gleichgewicht im Meeresökosystem sehr wichtig. Leider werden jedes Jahr Millionen von Haien getötet.",
+    questions: [
+      { q: "Wie lange gibt es Haie schon auf der Erde?", options: ["100 Millionen Jahre", "200 Millionen Jahre", "350 Millionen Jahre", "450 Millionen Jahre"], correct: 3 },
+      { q: "Was frisst der Walhai?", options: ["Große Fische", "Robben", "Kleinstlebewesen", "Schildkröten"], correct: 2 },
+      { q: "Was können Haie mit ihren besonderen Sinnen spüren?", options: ["Temperaturen", "Farben", "Herzschläge", "Geräusche an Land"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Kleinstlebewesen", meaning: "Sehr kleine Tiere und Pflanzen im Wasser, oft nur mit dem Mikroskop sichtbar" },
+      { word: "Ökosystem", meaning: "Alle Lebewesen und Umweltbedingungen in einem bestimmten Gebiet" },
+      { word: "Sinne", meaning: "Fähigkeiten wie Sehen, Hören, Riechen, mit denen man die Welt wahrnimmt" }
+    ]
+  },
+  {
+    id: 24,
+    title: "Der Amazonas – Fluss der Superlative",
+    icon: "&#x1F30A;",
+    difficulty: "medium",
+    wordCount: 101,
+    text: "Der Amazonas in Südamerika ist einer der längsten Flüsse der Welt und der wasserreichste überhaupt. Er transportiert so viel Wasser ins Meer, dass man es noch 200 Kilometer vom Flussdelta entfernt schmecken kann! Der Amazonas fließt durch den größten Regenwald der Erde. Über 3.000 Fischarten leben in ihm – mehr als in allen europäischen Flüssen zusammen. Auch Delfine, Krokodile, Piranhas und der riesige Arapaima-Fisch sind zu Hause hier. In der Regenzeit kann der Fluss bis zu 50 Kilometer breit werden! Viele Menschen leben in und an diesem Fluss. Er versorgt sie mit Nahrung und Wasser und ist ihr wichtigster Transportweg.",
+    questions: [
+      { q: "Was macht den Amazonas besonders?", options: ["Er ist der längste Fluss", "Er ist der wasserreichste Fluss", "Er ist am kältesten", "Er ist am tiefsten"], correct: 1 },
+      { q: "Wie viele Fischarten leben im Amazonas?", options: ["Über 300", "Über 1.000", "Über 3.000", "Über 10.000"], correct: 2 },
+      { q: "Wie breit kann der Amazonas in der Regenzeit werden?", options: ["5 Kilometer", "20 Kilometer", "50 Kilometer", "100 Kilometer"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Superlative", meaning: "Die höchste Steigerung, der beste oder größte von allem" },
+      { word: "Flussdelta", meaning: "Die Stelle, wo ein Fluss ins Meer mündet und sich in viele Arme aufteilt" },
+      { word: "Arapaima", meaning: "Ein riesiger Süßwasserfisch im Amazonas, einer der größten der Welt" }
+    ]
+  },
+  {
+    id: 25,
+    title: "Wie funktioniert ein Computer?",
+    icon: "&#x1F4BB;",
+    difficulty: "medium",
+    wordCount: 98,
+    text: "Ein Computer ist eine Maschine, die Informationen verarbeitet. Das Gehirn des Computers heißt Prozessor oder CPU. Er rechnet Millionen von Aufgaben pro Sekunde! Der Arbeitsspeicher, auch RAM genannt, merkt sich alles, was gerade benutzt wird – wie ein Schreibtisch, auf dem aktuelle Aufgaben liegen. Die Festplatte speichert alles dauerhaft – wie ein Regal voller Bücher. Damit der Computer mit dem Menschen sprechen kann, gibt es Bildschirm, Tastatur und Maus. Computer sprechen eine eigene Sprache aus Nullen und Einsen, den Binärcode. Moderne Computer sind so klein, dass sie in eine Tasche passen. Das Smartphone in deiner Tasche ist tausendmal stärker als der Computer, mit dem die ersten Astronauten zum Mond flogen!",
+    questions: [
+      { q: "Wie nennt man das Gehirn des Computers?", options: ["RAM", "Festplatte", "CPU", "Bildschirm"], correct: 2 },
+      { q: "Was ist der Unterschied zwischen RAM und Festplatte?", options: ["RAM ist größer", "RAM ist schneller", "RAM speichert dauerhaft, Festplatte temporär", "RAM speichert temporär, Festplatte dauerhaft"], correct: 3 },
+      { q: "Aus welchen Zeichen besteht der Binärcode?", options: ["Buchstaben", "Nullen und Einsen", "Zahlen von 1–9", "Symbolen"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Prozessor", meaning: "Das Rechenzentrum des Computers, das alle Berechnungen durchführt" },
+      { word: "Arbeitsspeicher", meaning: "Schneller, temporärer Speicher im Computer für aktuelle Aufgaben" },
+      { word: "Binärcode", meaning: "Die Computersprache aus nur zwei Zeichen: 0 und 1" }
+    ]
+  },
+  {
+    id: 26,
+    title: "Die Römer und ihr Imperium",
+    icon: "&#x1F3DB;&#xFE0F;",
+    difficulty: "medium",
+    wordCount: 103,
+    text: "Vor etwa 2.000 Jahren herrschte das Römische Reich über große Teile Europas, Nordafrikas und des Nahen Ostens. Die Römer waren berühmte Baumeister. Sie bauten gerade Straßen, die noch heute sichtbar sind. Ihre Aquädukte, das sind Wasserleitungen aus Stein, transportierten sauberes Wasser in die Städte. In Rom lebten über eine Million Menschen – das war damals riesig! Das Kolosseum fasste 50.000 Zuschauer. Die Römer sprachen Latein, das die Grundlage für viele heutige Sprachen ist, zum Beispiel Italienisch, Spanisch und Französisch. Auch viele deutsche Wörter stammen aus dem Lateinischen. Im Jahr 476 nach Christus zerbrach das Weströmische Reich – aber sein Einfluss prägt uns bis heute.",
+    questions: [
+      { q: "Was transportierten die römischen Aquädukte?", options: ["Waren", "Soldaten", "Wasser", "Steine"], correct: 2 },
+      { q: "Wie viele Zuschauer fasste das Kolosseum?", options: ["5.000", "10.000", "50.000", "500.000"], correct: 2 },
+      { q: "Welche Sprache sprachen die Römer?", options: ["Griechisch", "Latein", "Arabisch", "Keltisch"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Aquädukte", meaning: "Steinerne Brücken und Kanäle der Römer zum Transport von Wasser" },
+      { word: "Kolosseum", meaning: "Das riesige Amphitheater in Rom, wo Gladiatorenkämpfe stattfanden" },
+      { word: "Imperium", meaning: "Ein sehr großes Reich, das viele Länder und Völker beherrscht" }
+    ]
+  },
+  {
+    id: 27,
+    title: "Schwarze Löcher im Weltall",
+    icon: "&#x1F30C;",
+    difficulty: "hard",
+    wordCount: 114,
+    text: "Schwarze Löcher sind die mysteriösesten Objekte im Universum. Sie entstehen, wenn ein sehr massereicher Stern am Ende seines Lebens kollabiert. Die Schwerkraft eines Schwarzen Lochs ist so stark, dass selbst Licht nicht entkommen kann – deshalb sind sie schwarz und unsichtbar. Den Rand eines Schwarzen Lochs nennt man Ereignishorizont. Was dahinter liegt, wissen Wissenschaftler nicht genau. In der Mitte befindet sich eine sogenannte Singularität, an der alle bekannten Gesetze der Physik aufhören zu funktionieren. Im Zentrum fast jeder Galaxie, auch unserer Milchstraße, befindet sich ein supermassereiches Schwarzes Loch. Im Jahr 2019 wurde erstmals ein Foto eines Schwarzen Lochs aufgenommen – mit einem weltweiten Netzwerk aus Radioteleskopen.",
+    questions: [
+      { q: "Warum sind Schwarze Löcher schwarz?", options: ["Sie bestehen aus Dunkel", "Licht kann nicht entkommen", "Sie sind sehr weit entfernt", "Sie sind sehr kalt"], correct: 1 },
+      { q: "Wie nennt man den Rand eines Schwarzen Lochs?", options: ["Singularität", "Ereignishorizont", "Galaxienkern", "Neutronenzone"], correct: 1 },
+      { q: "Wann wurde das erste Foto eines Schwarzen Lochs gemacht?", options: ["1999", "2009", "2019", "2021"], correct: 2 }
+    ],
+    vocab: [
+      { word: "kollabiert", meaning: "Zusammenbricht und in sich selbst zusammenfällt" },
+      { word: "Ereignishorizont", meaning: "Die Grenze eines Schwarzen Lochs, hinter der nichts mehr entkommen kann" },
+      { word: "Singularität", meaning: "Ein Punkt unendlicher Dichte, an dem physikalische Gesetze versagen" }
+    ]
+  },
+  {
+    id: 28,
+    title: "Wie Impfstoffe funktionieren",
+    icon: "&#x1F489;",
+    difficulty: "hard",
+    wordCount: 109,
+    text: "Impfstoffe sind eine der wichtigsten Erfindungen der Medizin. Sie trainieren das Immunsystem, also die Abwehrkräfte des Körpers, damit es sich gegen bestimmte Krankheitserreger schützen kann. Früher starben Millionen Menschen an Krankheiten wie Pocken oder Kinderlähmung. Heute sind diese Krankheiten durch Impfungen fast verschwunden. Wie funktioniert das genau? Ein Impfstoff enthält abgeschwächte oder tote Erreger oder nur Teile davon. Das Immunsystem erkennt sie als Eindringlinge und bildet Antikörper. Diese Antikörper bleiben im Gedächtnis des Immunsystems gespeichert. Wenn der echte Erreger dann kommt, ist der Körper sofort bereit und besiegt ihn, bevor man krank wird. Manche Impfungen müssen regelmäßig aufgefrischt werden, weil Viren sich verändern können.",
+    questions: [
+      { q: "Was trainiert ein Impfstoff?", options: ["Die Muskeln", "Das Immunsystem", "Das Gehirn", "Den Magen"], correct: 1 },
+      { q: "Was sind Antikörper?", options: ["Krankheiten", "Viren", "Abwehrstoffe des Immunsystems", "Medikamente"], correct: 2 },
+      { q: "Warum müssen manche Impfungen aufgefrischt werden?", options: ["Weil der Körper vergisst", "Weil Viren sich verändern", "Weil Impfstoffe teuer sind", "Weil Antikörper sterben"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Immunsystem", meaning: "Das Abwehrsystem des Körpers gegen Krankheiten" },
+      { word: "Antikörper", meaning: "Eiweißstoffe im Blut, die Krankheitserreger erkennen und bekämpfen" },
+      { word: "Krankheitserreger", meaning: "Kleine Lebewesen wie Viren oder Bakterien, die Krankheiten auslösen" }
+    ]
+  },
+  {
+    id: 29,
+    title: "Demokratie – was bedeutet das?",
+    icon: "&#x1F5F3;&#xFE0F;",
+    difficulty: "hard",
+    wordCount: 107,
+    text: "Das Wort Demokratie kommt aus dem Griechischen und bedeutet „Herrschaft des Volkes". In einer Demokratie bestimmen die Bürger durch Wahlen, wer das Land regiert. Alle Erwachsenen dürfen wählen – egal welches Geschlecht, welche Herkunft oder welcher Glaube. Die Demokratie entstand vor etwa 2.500 Jahren im antiken Griechenland, genauer in Athen. Damals durften jedoch nur freie Männer wählen. Heute gilt die Demokratie als beste Staatsform, weil sie die Rechte aller Menschen schützt. Eine wichtige Grundlage ist die Gewaltenteilung: Gesetzgebung, Regierung und Gerichte sind voneinander getrennt, damit keine Gruppe zu viel Macht hat. Presse- und Meinungsfreiheit sind ebenfalls unverzichtbare Bestandteile einer echten Demokratie.",
+    questions: [
+      { q: "Was bedeutet das Wort Demokratie?", options: ["Herrschaft des Königs", "Herrschaft des Volkes", "Herrschaft der Reichen", "Herrschaft der Götter"], correct: 1 },
+      { q: "Wo entstand die Demokratie?", options: ["In Rom", "In Ägypten", "In Athen", "In Babylon"], correct: 2 },
+      { q: "Was versteht man unter Gewaltenteilung?", options: ["Militär, Polizei und Gerichte", "Gesetzgebung, Regierung und Gerichte", "Präsident, König und Papst", "Bund, Länder und Gemeinden"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Gewaltenteilung", meaning: "Die Aufteilung der Staatsmacht auf verschiedene unabhängige Organe" },
+      { word: "Meinungsfreiheit", meaning: "Das Recht, die eigene Meinung frei äußern zu dürfen" },
+      { word: "unverzichtbar", meaning: "So wichtig, dass man ohne es nicht auskommt" }
+    ]
+  },
+  {
+    id: 30,
+    title: "Künstliche Intelligenz – Computer denken",
+    icon: "&#x1F916;",
+    difficulty: "hard",
+    wordCount: 116,
+    text: "Künstliche Intelligenz, kurz KI, ist ein Computerprogramm, das Aufgaben erledigt, für die man normalerweise menschliche Intelligenz braucht. KI kann Sprache verstehen, Bilder erkennen, Musik komponieren und sogar Texte schreiben. Wie lernt eine KI? Durch riesige Mengen an Daten und Beispielen. Wenn man einer KI Millionen Fotos von Katzen zeigt, lernt sie, Katzen zu erkennen. Dieser Prozess heißt maschinelles Lernen. Heute steckt KI überall: in Navigationssystemen, Empfehlungen bei Streamingdiensten oder Sprachassistenten wie Siri. KI kann Menschen helfen, Krankheiten früher zu erkennen oder Klimadaten auszuwerten. Aber es gibt auch Bedenken: Was passiert mit Arbeitsplätzen? Wer ist verantwortlich, wenn eine KI einen Fehler macht? Diese Fragen beschäftigen Wissenschaftler, Politiker und Gesellschaften weltweit.",
+    questions: [
+      { q: "Was bedeutet die Abkürzung KI?", options: ["Künstliche Integration", "Künstliche Intelligenz", "Kreative Innovation", "Komplexe Informatik"], correct: 1 },
+      { q: "Wie lernt eine künstliche Intelligenz?", options: ["Durch Bücher lesen", "Durch Gespräche mit Menschen", "Durch riesige Datenmengen", "Durch Programmierung allein"], correct: 2 },
+      { q: "Wie nennt man den Lernprozess einer KI?", options: ["Digitales Lernen", "Maschinelles Lernen", "Automatisches Lernen", "Computerlernen"], correct: 1 }
+    ],
+    vocab: [
+      { word: "maschinelles Lernen", meaning: "Die Fähigkeit von Computern, aus Daten selbst zu lernen" },
+      { word: "Sprachassistent", meaning: "Ein KI-Programm, das gesprochene Befehle versteht und antwortet" },
+      { word: "Bedenken", meaning: "Sorgen oder Zweifel, die man gegen etwas hat" }
+    ]
+  },
+  {
     id: 18,
     title: "Klimawandel – was passiert mit unserer Erde?",
     icon: "&#x1F30D;",
@@ -1185,34 +1559,51 @@ function showPage(pageId) {
 
   if (pageId === 'test') { renderTestTextList(); resetTest(); }
   if (pageId === 'training') { renderTrainingTextList(); showTrainingSetup(); }
+  if (pageId === 'wortblitz') { showWbStart(); }
   if (pageId === 'stats') renderStats();
   if (pageId === 'vocab') renderVocabPage();
   if (pageId === 'home') updateHomeStreak();
 }
 
 function getNavLabel(pageId) {
-  const map = { home: 'Start', test: 'Lesetest', training: 'Training', stats: 'Fortschritt', vocab: 'Start' };
+  const map = { home: 'Start', test: 'Lesetest', training: 'Training', wortblitz: 'Wort-Blitz', stats: 'Fortschritt', vocab: 'Start' };
   return map[pageId] || '';
 }
 
 // ============================================================
 // TEXT LIST RENDERING
 // ============================================================
+function getReadTextIds() {
+  const testIds = new Set(state.testResults.map(r => r.textId));
+  const trainIds = new Set(state.trainingSessions.map(s => s.textId));
+  return { testIds, trainIds };
+}
+
 function renderTextList(containerId, texts, onSelect) {
   const container = document.getElementById(containerId);
   const diffLabels = { easy: 'Leicht', medium: 'Mittel', hard: 'Knifflig' };
   const diffClasses = { easy: 'badge-easy', medium: 'badge-medium', hard: 'badge-hard' };
+  const { testIds, trainIds } = getReadTextIds();
 
-  container.innerHTML = texts.map(t => `
-    <div class="text-item" onclick="${onSelect}(${t.id})">
+  container.innerHTML = texts.map(t => {
+    const tested = testIds.has(t.id);
+    const trained = trainIds.has(t.id);
+    const readClass = (tested || trained) ? ' already-read' : '';
+    const readBadge = tested ? '<span class="read-badge">&#x2713; Getestet</span>'
+                   : trained ? '<span class="read-badge">&#x2713; Trainiert</span>' : '';
+    return `
+    <div class="text-item${readClass}" onclick="${onSelect}(${t.id})">
       <div class="text-icon">${t.icon}</div>
       <div class="text-info">
         <div class="text-title">${t.title}</div>
         <div class="text-meta">${t.wordCount} Wörter</div>
       </div>
-      <span class="text-badge ${diffClasses[t.difficulty]}">${diffLabels[t.difficulty]}</span>
-    </div>
-  `).join('');
+      <div class="text-badges">
+        ${readBadge}
+        <span class="text-badge ${diffClasses[t.difficulty]}">${diffLabels[t.difficulty]}</span>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderTestTextList(filter) {
@@ -1772,6 +2163,197 @@ function updateHomeStreak() {
   } else {
     el.style.display = 'none';
   }
+}
+
+// ============================================================
+// WORT-BLITZ
+// ============================================================
+let wb = {
+  words: [],
+  index: 0,
+  correct: 0,
+  wrong: 0,
+  rounds: 10,
+  duration: 2000,
+  flashTimer: null,
+  review: []
+};
+
+function showWbStart() {
+  document.getElementById('wb-start').classList.remove('hidden');
+  document.getElementById('wb-playing').classList.add('hidden');
+  document.getElementById('wb-results').classList.add('hidden');
+
+  const hs = parseInt(localStorage.getItem('leseHeld_wbHighscore') || '0');
+  if (hs > 0) {
+    document.getElementById('wb-highscore').textContent = hs;
+    document.getElementById('wb-highscore-box').classList.remove('hidden');
+  }
+}
+
+function buildWbWordPool() {
+  const pool = [];
+  TEXTS.forEach(t => {
+    t.vocab.forEach(v => pool.push({ word: v.word, meaning: v.meaning }));
+  });
+  return pool;
+}
+
+function generateDistractors(word, pool) {
+  // Try to find similar-length words from pool as distractors
+  const others = pool.filter(p => p.word !== word).map(p => p.word);
+  // Shuffle others and take 3
+  for (let i = others.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [others[i], others[j]] = [others[j], others[i]];
+  }
+  const realDistractors = others.slice(0, 3);
+
+  // If not enough real words, generate typo-versions
+  while (realDistractors.length < 3) {
+    realDistractors.push(makeTypo(word, realDistractors));
+  }
+  return realDistractors;
+}
+
+function makeTypo(word, existing) {
+  const swaps = [['ei', 'ie'], ['ie', 'ei'], ['sch', 'sh'], ['au', 'ua'], ['eu', 'ue']];
+  for (const [a, b] of swaps) {
+    if (word.includes(a)) {
+      const t = word.replace(a, b);
+      if (!existing.includes(t) && t !== word) return t;
+    }
+  }
+  // Swap two adjacent chars
+  const arr = word.split('');
+  const pos = Math.floor(arr.length / 2);
+  [arr[pos], arr[pos - 1]] = [arr[pos - 1], arr[pos]];
+  return arr.join('');
+}
+
+function startWortBlitz() {
+  wb.rounds = parseInt(document.getElementById('wb-rounds').value);
+  wb.duration = parseInt(document.getElementById('wb-duration').value);
+  wb.index = 0;
+  wb.correct = 0;
+  wb.wrong = 0;
+  wb.review = [];
+
+  const pool = buildWbWordPool();
+  // Shuffle and pick 'rounds' words
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  wb.words = shuffled.slice(0, wb.rounds);
+
+  document.getElementById('wb-start').classList.add('hidden');
+  document.getElementById('wb-playing').classList.remove('hidden');
+  document.getElementById('wb-results').classList.add('hidden');
+
+  runWbRound();
+}
+
+function runWbRound() {
+  if (wb.index >= wb.words.length) {
+    showWbResults();
+    return;
+  }
+
+  const item = wb.words[wb.index];
+  const total = wb.words.length;
+  document.getElementById('wb-progress-label').textContent = `Wort ${wb.index + 1} von ${total}`;
+
+  // Show word
+  const wordEl = document.getElementById('wb-word-display');
+  wordEl.textContent = item.word;
+  wordEl.classList.remove('hidden-word');
+
+  // Show meaning hint while word is visible
+  document.getElementById('wb-meaning-hint').textContent = item.meaning;
+  document.getElementById('wb-options').classList.add('hidden');
+
+  // Flash bar animation
+  const fillEl = document.getElementById('wb-flash-fill');
+  fillEl.style.transition = 'none';
+  fillEl.style.width = '100%';
+  // Force reflow
+  void fillEl.offsetWidth;
+  fillEl.style.transition = `width ${wb.duration}ms linear`;
+  fillEl.style.width = '0%';
+
+  // Hide word after duration, show options
+  wb.flashTimer = setTimeout(() => {
+    wordEl.classList.add('hidden-word');
+    document.getElementById('wb-meaning-hint').textContent = 'Welches Wort hast du gesehen?';
+
+    const pool = buildWbWordPool();
+    const distractors = generateDistractors(item.word, pool);
+    const options = [item.word, ...distractors].sort(() => Math.random() - 0.5);
+
+    const optContainer = document.getElementById('wb-options');
+    optContainer.innerHTML = options.map((opt, i) => `
+      <button class="wb-option" onclick="answerWb('${opt.replace(/'/g, "\\'")}', '${item.word.replace(/'/g, "\\'")}', ${i})">${opt}</button>
+    `).join('');
+    optContainer.classList.remove('hidden');
+  }, wb.duration);
+}
+
+function answerWb(selected, correct, clickedIdx) {
+  // Disable all buttons
+  const btns = document.querySelectorAll('.wb-option');
+  btns.forEach(b => b.onclick = null);
+
+  const isCorrect = selected === correct;
+  if (isCorrect) {
+    wb.correct++;
+    btns[clickedIdx].classList.add('wb-correct');
+  } else {
+    wb.wrong++;
+    btns[clickedIdx].classList.add('wb-wrong');
+    // Show correct one
+    btns.forEach(b => { if (b.textContent === correct) b.classList.add('wb-correct'); });
+  }
+
+  wb.review.push({ word: correct, selected, correct: isCorrect });
+  wb.index++;
+
+  setTimeout(runWbRound, 1200);
+}
+
+function showWbResults() {
+  document.getElementById('wb-playing').classList.add('hidden');
+  document.getElementById('wb-results').classList.remove('hidden');
+
+  const total = wb.words.length;
+  document.getElementById('wb-score-display').textContent = `${wb.correct}/${total}`;
+  document.getElementById('wb-correct-count').textContent = wb.correct;
+  document.getElementById('wb-wrong-count').textContent = wb.wrong;
+
+  const pct = wb.correct / total;
+  let msg = '', cls = '';
+  if (pct >= 0.9) { msg = '🌟 Außergewöhnlich! Du liest Wörter mit absoluter Präzision!'; cls = 'great'; }
+  else if (pct >= 0.7) { msg = '👍 Toll! Deine Aufmerksamkeit ist richtig gut!'; cls = 'good'; }
+  else if (pct >= 0.5) { msg = '💪 Nicht schlecht! Übe weiter, dann wirst du noch besser!'; cls = 'keep-going'; }
+  else { msg = '📖 Versuche es nochmal! Konzentriere dich auf jeden Buchstaben.'; cls = 'keep-going'; }
+
+  const msgEl = document.getElementById('wb-result-message');
+  msgEl.textContent = msg;
+  msgEl.className = 'result-message ' + cls;
+
+  // Save highscore
+  const prevHs = parseInt(localStorage.getItem('leseHeld_wbHighscore') || '0');
+  const score = Math.round((wb.correct / total) * 100);
+  if (score > prevHs) localStorage.setItem('leseHeld_wbHighscore', score.toString());
+
+  // Review list
+  const reviewEl = document.getElementById('wb-review');
+  reviewEl.innerHTML = '<h3 style="margin-bottom:10px">Übersicht:</h3>' + wb.review.map(r => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F0EFFF">
+      <span style="font-size:1.2rem">${r.correct ? '✅' : '❌'}</span>
+      <div>
+        <div style="font-weight:700">${r.word}</div>
+        ${!r.correct ? `<div style="font-size:0.82rem;color:var(--secondary)">Du hast gewählt: ${r.selected}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
 }
 
 // ============================================================
