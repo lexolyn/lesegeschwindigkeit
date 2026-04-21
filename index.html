@@ -640,6 +640,115 @@
   .wb-settings { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
   .wb-settings label { font-weight: 700; font-size: 0.9rem; }
 
+  /* Betonungs-Trainer */
+  .bt-word-display {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    min-height: 100px;
+    padding: 24px 10px;
+    background: #F0EFFF;
+    border-radius: var(--radius);
+    margin: 16px 0;
+  }
+  .bt-syllable {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 12px;
+    transition: all 0.2s;
+    line-height: 1.2;
+    cursor: default;
+  }
+  .bt-syllable.bt-stressed {
+    color: white;
+    background: var(--primary);
+    transform: scale(1.12);
+    box-shadow: 0 4px 14px rgba(108,99,255,0.35);
+  }
+  .bt-syllable.bt-dot {
+    color: var(--text-light);
+    font-size: 1.2rem;
+    padding: 0 2px;
+    cursor: default;
+    font-weight: 400;
+  }
+  /* Quiz mode: syllables are clickable */
+  .bt-quiz-mode .bt-syllable:not(.bt-dot) {
+    cursor: pointer;
+    border: 2px solid #E8E7F5;
+    background: white;
+  }
+  .bt-quiz-mode .bt-syllable:not(.bt-dot):hover {
+    border-color: var(--primary);
+    background: #F0EFFF;
+    color: var(--primary);
+  }
+  .bt-syllable.bt-quiz-correct {
+    background: #D4F7E3;
+    border-color: #43E97B !important;
+    color: #1A8A4A !important;
+    transform: scale(1.12);
+  }
+  .bt-syllable.bt-quiz-wrong {
+    background: #FFE5EA;
+    border-color: var(--secondary) !important;
+    color: #c0392b !important;
+  }
+  .bt-meaning {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    font-style: italic;
+    min-height: 24px;
+    margin-top: 4px;
+  }
+  .bt-progress { text-align: center; font-size: 0.9rem; color: var(--text-light); font-weight: 700; margin-bottom: 8px; }
+  .bt-score-big {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+  }
+  .bt-mode-tabs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin: 12px 0;
+  }
+  .bt-tab {
+    padding: 10px 22px;
+    border: 2px solid #E8E7F5;
+    border-radius: 50px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: white;
+    color: var(--text-light);
+    transition: all 0.2s;
+  }
+  .bt-tab.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+  .bt-feedback {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    min-height: 32px;
+    margin: 8px 0;
+  }
+  .bt-filter { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+  .bt-filter label { font-weight: 700; font-size: 0.9rem; }
+
   /* Responsive */
   @media (max-width: 500px) {
     .header h1 { font-size: 1.8rem; }
@@ -666,6 +775,7 @@
     <button onclick="showPage('training')">&#x1F3AF; Training</button>
     <button onclick="showPage('wortblitz')">&#x26A1; Wort-Blitz</button>
     <button onclick="showPage('stats')">&#x1F4CA; Fortschritt</button>
+    <button onclick="showPage('betonung')">&#x1F3A4; Betonung</button>
   </nav>
 
   <!-- HOME PAGE -->
@@ -700,6 +810,11 @@
           <h3>Neue W&ouml;rter</h3>
           <p>Entdecke spannende W&ouml;rter!</p>
         </div>
+        <div class="home-card" onclick="showPage('betonung')">
+          <div class="icon">&#x1F3A4;</div>
+          <h3>Betonung</h3>
+          <p>Lerne, W&ouml;rter richtig zu betonen!</p>
+        </div>
       </div>
     </div>
 
@@ -722,6 +837,7 @@
         <button onclick="filterTexts('easy', this)">&#x1F7E2; Leicht</button>
         <button onclick="filterTexts('medium', this)">&#x1F7E1; Mittel</button>
         <button onclick="filterTexts('hard', this)">&#x1F534; Knifflig</button>
+        <button onclick="filterTexts('new', this)">&#x2728; Neu</button>
       </div>
 
       <div class="text-list" id="test-text-list"></div>
@@ -803,6 +919,7 @@
         <button onclick="filterTrainingTexts('easy', this)">&#x1F7E2; Leicht</button>
         <button onclick="filterTrainingTexts('medium', this)">&#x1F7E1; Mittel</button>
         <button onclick="filterTrainingTexts('hard', this)">&#x1F534; Knifflig</button>
+        <button onclick="filterTrainingTexts('new', this)">&#x2728; Neu</button>
       </div>
       <div class="text-list" id="training-text-list"></div>
     </div>
@@ -906,6 +1023,68 @@
   </div>
 
   <!-- WORT-BLITZ PAGE -->
+  <!-- BETONUNGS-TRAINER PAGE -->
+  <div id="page-betonung" class="page">
+
+    <!-- Start screen -->
+    <div id="bt-start" class="card">
+      <h2>&#x1F3A4; Betonungs-Trainer</h2>
+      <p>W&ouml;rter werden in Silben aufgeteilt. &Uuml;be, die richtig betonte Silbe zu erkennen und laut vorzulesen!</p>
+      <div class="bt-mode-tabs">
+        <button class="bt-tab active" id="bt-tab-learn" onclick="btSetMode('learn')">&#x1F4D6; Lern-Modus</button>
+        <button class="bt-tab" id="bt-tab-quiz" onclick="btSetMode('quiz')">&#x1F3AF; Quiz-Modus</button>
+      </div>
+      <div class="bt-filter">
+        <label>Schwierigkeit:</label>
+        <select id="bt-difficulty" style="padding:8px 14px;border-radius:10px;border:2px solid #E8E7F5;font-family:inherit;font-weight:700;font-size:0.95rem;cursor:pointer">
+          <option value="all">Alle</option>
+          <option value="easy">Leicht</option>
+          <option value="medium">Mittel</option>
+          <option value="hard">Schwer</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="startBetonung()">&#x1F3A4; Los geht&rsquo;s!</button>
+      </div>
+      <div id="bt-highscore-box" class="info-box hidden">
+        &#x1F3C6; Bestes Quiz-Ergebnis: <strong><span id="bt-highscore">0</span></strong> Punkte
+      </div>
+    </div>
+
+    <!-- Playing screen -->
+    <div id="bt-playing" class="card hidden">
+      <div class="bt-progress" id="bt-progress-label">Wort 1 von 10</div>
+      <div id="bt-word-area" class="bt-word-display"></div>
+      <div class="bt-meaning" id="bt-meaning-text"></div>
+      <div class="bt-feedback" id="bt-feedback"></div>
+      <div class="actions" id="bt-actions">
+        <button class="btn btn-primary" id="bt-next-btn" onclick="btNextWord()">Weiter &#x27A1;&#xFE0F;</button>
+      </div>
+    </div>
+
+    <!-- Results screen -->
+    <div id="bt-results" class="card hidden">
+      <h2>&#x1F389; Betonung Ergebnis</h2>
+      <div class="bt-score-big" id="bt-score-display">0/10</div>
+      <div id="bt-result-message" class="result-message" style="margin:12px 0"></div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="bt-correct-count">0</div>
+          <div class="stat-label">Richtig</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="bt-wrong-count">0</div>
+          <div class="stat-label">Falsch</div>
+        </div>
+      </div>
+      <div id="bt-review" style="margin-top:12px"></div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="startBetonung()">&#x1F3A4; Nochmal!</button>
+        <button class="btn btn-outline btn-sm" onclick="showBtStart()">Einstellungen</button>
+      </div>
+    </div>
+  </div>
+
   <div id="page-wortblitz" class="page">
     <!-- Start screen -->
     <div id="wb-start" class="card">
@@ -1497,6 +1676,552 @@ const TEXTS = [
       { word: "Bedenken", meaning: "Sorgen oder Zweifel, die man gegen etwas hat" }
     ]
   },
+  // ── 10 NEUE LEICHT-TEXTE (IDs 31–40) ──────────────────────────
+  {
+    id: 31,
+    title: "Kunstturnen für Kinder",
+    icon: "&#x1F938;",
+    difficulty: "easy",
+    wordCount: 77,
+    text: "Kunstturnen ist eine der ältesten Sportarten der Welt. Turner und Turnerinnen lernen, ihren Körper zu kontrollieren. Beim Kunstturnen gibt es viele verschiedene Geräte. Mädchen turnen zum Beispiel am Schwebebalken und am Stufenbarren. Jungen turnen am Reck und an den Ringen. Auf dem Boden zeigen Turner und Turnerinnen Salti, Räder und elegante Bewegungen. Wichtig beim Turnen sind Kraft, Gleichgewicht und Geschicklichkeit. Mit regelmäßigem Training werden die Bewegungen immer besser. Viele Kinder beginnen bereits im Vorschulalter mit dem Turnen.",
+    questions: [
+      { q: "Welches Gerät benutzen Mädchen beim Kunstturnen?", options: ["Reck", "Schwebebalken", "Barren", "Ringe"], correct: 1 },
+      { q: "Was ist beim Turnen wichtig?", options: ["Schnelligkeit und Lautstärke", "Kraft, Gleichgewicht und Geschicklichkeit", "Tanzen und Singen", "Größe und Gewicht"], correct: 1 },
+      { q: "Wann beginnen viele Kinder mit dem Turnen?", options: ["In der Oberschule", "Im Vorschulalter", "Als Erwachsene", "Mit zehn Jahren"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Schwebebalken", meaning: "Ein schmaler Balken in der Luft, auf dem Turner balancieren" },
+      { word: "Salti", meaning: "Sprünge, bei denen man sich in der Luft einmal um sich selbst dreht" },
+      { word: "Geschicklichkeit", meaning: "Die Fähigkeit, Bewegungen genau und sicher auszuführen" }
+    ]
+  },
+  {
+    id: 32,
+    title: "Frisches Obst und Gemüse",
+    icon: "&#x1F966;",
+    difficulty: "easy",
+    wordCount: 85,
+    text: "Obst und Gemüse sind sehr gesund. Sie enthalten viele Vitamine und Mineralstoffe, die unser Körper braucht. Äpfel sind reich an Vitamin C und helfen gegen Erkältungen. Karotten enthalten viel Vitamin A, das gut für die Augen ist. Brokkoli hat viele wichtige Nährstoffe und schützt den Körper. Frisches Obst und Gemüse schmeckt am besten, wenn es gerade geerntet wurde. Auf dem Markt kann man frisches, regionales Obst und Gemüse kaufen. Ernährungsexperten empfehlen täglich fünf Portionen Obst und Gemüse zu essen. Das nennt man die „5 am Tag"-Regel.",
+    questions: [
+      { q: "Welches Lebensmittel enthält Vitamin A, das gut für die Augen ist?", options: ["Äpfel", "Brokkoli", "Karotten", "Bananen"], correct: 2 },
+      { q: "Wie viele Portionen Obst und Gemüse soll man täglich essen?", options: ["2", "3", "5", "7"], correct: 2 },
+      { q: "Wann schmeckt frisches Obst am besten?", options: ["Nach dem Kochen", "Wenn es gerade geerntet wurde", "Im Winter", "Wenn es eingefroren war"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Vitamine", meaning: "Wichtige Stoffe im Essen, die der Körper braucht, aber nicht selbst herstellen kann" },
+      { word: "Mineralstoffe", meaning: "Nährstoffe wie Calcium oder Eisen, die der Körper für viele Aufgaben braucht" },
+      { word: "regional", meaning: "Aus der näheren Umgebung, nicht von weit her transportiert" }
+    ]
+  },
+  {
+    id: 33,
+    title: "Spaß beim Schwimmen",
+    icon: "&#x1F3CA;",
+    difficulty: "easy",
+    wordCount: 86,
+    text: "Schwimmen ist ein toller Sport für Kinder. Im Wasser fühlt man sich leicht und schwebend. Beim Schwimmen bewegt man alle Muskeln gleichzeitig. Das ist sehr gesund für den Körper. Außerdem ist Schwimmen eine wichtige Fähigkeit, weil man sich damit vor dem Ertrinken schützen kann. Im Schwimmbad lernen viele Kinder ihre ersten Schwimmzüge. Wer gut schwimmen kann, bekommt das Schwimmabzeichen. Das bekannteste Schwimmabzeichen in Deutschland ist das Seepferdchen. Es ist eine Auszeichnung für Kinder, die die ersten Schwimmregeln gelernt haben.",
+    questions: [
+      { q: "Was ist das bekannteste Schwimmabzeichen für Kinder in Deutschland?", options: ["Goldfisch", "Delphin", "Seepferdchen", "Wal"], correct: 2 },
+      { q: "Warum ist Schwimmen besonders wichtig?", options: ["Weil es schnell geht", "Weil man sich damit vor dem Ertrinken schützen kann", "Weil es trendy ist", "Weil es günstig ist"], correct: 1 },
+      { q: "Was trainiert man beim Schwimmen?", options: ["Nur die Arme", "Nur die Beine", "Alle Muskeln gleichzeitig", "Das Gleichgewicht"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Schwimmzüge", meaning: "Die Bewegungen der Arme und Beine, die man beim Schwimmen macht" },
+      { word: "Schwimmabzeichen", meaning: "Eine Auszeichnung dafür, dass man die Grundregeln des Schwimmens beherrscht" },
+      { word: "Muskeln", meaning: "Die Teile im Körper, die Bewegungen möglich machen" }
+    ]
+  },
+  {
+    id: 34,
+    title: "Gesundes Frühstück",
+    icon: "&#x1F373;",
+    difficulty: "easy",
+    wordCount: 87,
+    text: "Das Frühstück ist die wichtigste Mahlzeit des Tages. Wer morgens gut frühstückt, kann sich in der Schule besser konzentrieren. Ein gesundes Frühstück enthält Kohlenhydrate, die dem Körper Energie geben. Brot, Müsli oder Haferflocken sind gute Frühstücksideen. Dazu passen Obst, Milch oder ein Glas Saft. Zu viel Zucker am Morgen ist keine gute Idee, denn er macht schnell wieder müde. Viele Kinder mögen Cornflakes, aber die enthalten oft sehr viel Zucker. Besser ist Vollkornbrot mit Käse oder einem weich gekochten Ei. Ein gutes Frühstück macht den Morgen angenehm.",
+    questions: [
+      { q: "Warum ist ein gutes Frühstück für die Schule wichtig?", options: ["Weil Lehrer das verlangen", "Weil man sich besser konzentrieren kann", "Weil es vorgeschrieben ist", "Weil man sonst zu spät kommt"], correct: 1 },
+      { q: "Was enthält oft viel Zucker und ist daher keine gute Frühstücksidee?", options: ["Haferflocken", "Vollkornbrot", "Cornflakes", "Käse"], correct: 2 },
+      { q: "Was geben Kohlenhydrate dem Körper?", options: ["Vitamine", "Energie", "Calcium", "Wasser"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Kohlenhydrate", meaning: "Nährstoffe in Brot und Getreide, die dem Körper Energie geben" },
+      { word: "Haferflocken", meaning: "Getreideprodukt aus Hafer, das als Frühstück mit Milch gegessen wird" },
+      { word: "konzentrieren", meaning: "Die Aufmerksamkeit vollständig auf eine Aufgabe richten" }
+    ]
+  },
+  {
+    id: 35,
+    title: "Fahrradfahren macht Spaß",
+    icon: "&#x1F6B2;",
+    difficulty: "easy",
+    wordCount: 88,
+    text: "Fahrradfahren ist eine der beliebtesten Freizeitaktivitäten in Deutschland. Fast jedes Kind hat ein Fahrrad. Mit dem Fahrrad kommt man schnell von einem Ort zum anderen und schont dabei die Umwelt. Beim Radfahren sollte man immer einen Helm tragen. Der Helm schützt den Kopf bei einem Sturz. Im Straßenverkehr gibt es besondere Fahrradwege, die nur für Radfahrer gedacht sind. Wer sein Fahrrad gut kennt, fährt sicherer. Man sollte die Bremsen regelmäßig überprüfen und die Reifen aufpumpen. In vielen Städten gibt es auch Leihfahrräder, die man für kurze Zeit mieten kann.",
+    questions: [
+      { q: "Was schützt den Kopf bei einem Sturz vom Fahrrad?", options: ["Eine Jacke", "Ein Helm", "Ein Schal", "Handschuhe"], correct: 1 },
+      { q: "Wofür sind Fahrradwege gedacht?", options: ["Nur für Fußgänger", "Nur für Autos", "Nur für Radfahrer", "Für alle Verkehrsteilnehmer"], correct: 2 },
+      { q: "Was sollte man am Fahrrad regelmäßig überprüfen?", options: ["Farbe und Klingel", "Bremsen und Reifen", "Sattel und Lenker", "Korb und Ständer"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Leihfahrräder", meaning: "Fahrräder, die man für eine bestimmte Zeit gegen Bezahlung ausleihen kann" },
+      { word: "Straßenverkehr", meaning: "Alle Fahrzeuge und Fußgänger, die sich auf den Straßen bewegen" },
+      { word: "schonen", meaning: "Etwas schützen und nicht unnötig belasten" }
+    ]
+  },
+  {
+    id: 36,
+    title: "Hunde – treue Freunde",
+    icon: "&#x1F415;",
+    difficulty: "easy",
+    wordCount: 88,
+    text: "Hunde sind die ältesten Haustiere des Menschen. Schon vor Tausenden von Jahren lebten Menschen und Hunde zusammen. Hunde helfen uns auf viele Arten. Blinde Menschen werden von speziell ausgebildeten Hunden sicher durch die Stadt geführt. Polizeihunde suchen nach vermissten Personen oder finden versteckte Gegenstände. Als Haustier ist der Hund ein treuer Freund. Ein Hund muss jeden Tag Gassi gehen und braucht viel Bewegung. Wer einen Hund hat, bewegt sich deshalb selbst auch mehr. Hunde verstehen viele Gesten und Worte ihres Besitzers und sind deshalb besonders beliebt.",
+    questions: [
+      { q: "Seit wann leben Hunde und Menschen zusammen?", options: ["Seit 100 Jahren", "Seit Tausenden von Jahren", "Seit 50 Jahren", "Seit dem Mittelalter"], correct: 1 },
+      { q: "Wozu werden Polizeihunde eingesetzt?", options: ["Zum Schlafen", "Zum Apportieren", "Zum Suchen von Personen und Gegenständen", "Zum Bewachen von Gebäuden"], correct: 2 },
+      { q: "Welchen Vorteil hat ein Hund als Haustier für den Besitzer?", options: ["Man muss weniger kochen", "Man bewegt sich mehr", "Man schläft besser", "Man braucht weniger Freunde"], correct: 1 }
+    ],
+    vocab: [
+      { word: "ausgebildet", meaning: "Für eine bestimmte Aufgabe trainiert und vorbereitet" },
+      { word: "Gesten", meaning: "Bewegungen mit Händen oder dem Körper, die etwas bedeuten" },
+      { word: "Führhund", meaning: "Ein speziell trainierter Hund, der blinden Menschen hilft, sich sicher zu bewegen" }
+    ]
+  },
+  {
+    id: 37,
+    title: "Warum brauchen wir Wasser?",
+    icon: "&#x1F4A7;",
+    difficulty: "easy",
+    wordCount: 86,
+    text: "Wasser ist das wichtigste Getränk der Welt. Unser Körper besteht zu etwa 60 Prozent aus Wasser. Wasser hilft dabei, Nährstoffe im Körper zu transportieren und schädliche Stoffe auszuspülen. Wenn wir zu wenig trinken, werden wir müde und können uns schlechter konzentrieren. Kinder sollten täglich etwa 1,5 Liter Wasser trinken. Süße Getränke wie Limonade sind nicht so gut, weil sie viel Zucker enthalten. Wasser aus dem Wasserhahn in Deutschland ist sehr sauber und von hoher Qualität. Früher mussten Menschen weite Wege zurücklegen, um sauberes Wasser zu finden.",
+    questions: [
+      { q: "Wie viel Prozent des Körpers besteht aus Wasser?", options: ["30 Prozent", "45 Prozent", "60 Prozent", "80 Prozent"], correct: 2 },
+      { q: "Wie viel Wasser sollten Kinder täglich trinken?", options: ["0,5 Liter", "1 Liter", "1,5 Liter", "3 Liter"], correct: 2 },
+      { q: "Was ist ein Nachteil von süßen Getränken?", options: ["Sie sind teuer", "Sie enthalten viel Zucker", "Sie schmecken nicht gut", "Sie sind zu kalt"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Nährstoffe", meaning: "Wichtige Bestandteile im Essen und Trinken, die der Körper braucht" },
+      { word: "transportieren", meaning: "Etwas von einem Ort zu einem anderen befördern" },
+      { word: "Konzentration", meaning: "Die Fähigkeit, sich vollständig auf eine Sache zu fokussieren" }
+    ]
+  },
+  {
+    id: 38,
+    title: "Fußball – das Lieblingsspiel",
+    icon: "&#x26BD;",
+    difficulty: "easy",
+    wordCount: 87,
+    text: "Fußball ist der beliebteste Sport der Welt. Zwei Mannschaften mit je elf Spielern versuchen, den Ball ins gegnerische Tor zu schießen. Die Mannschaft, die mehr Tore erzielt, gewinnt das Spiel. Ein Fußballfeld ist 105 Meter lang und 68 Meter breit. Der Torwart ist der einzige Spieler, der den Ball mit den Händen berühren darf. In Deutschland spielen Millionen von Menschen Fußball, vom Kind bis zum Erwachsenen. Die deutsche Fußball-Nationalmannschaft hat die Weltmeisterschaft viermal gewonnen. Fußball macht nicht nur Spaß, sondern trainiert auch Schnelligkeit, Ausdauer und Teamgeist.",
+    questions: [
+      { q: "Wie viele Spieler hat eine Fußballmannschaft?", options: ["9", "10", "11", "12"], correct: 2 },
+      { q: "Wer darf den Ball mit den Händen berühren?", options: ["Alle Spieler", "Kein Spieler", "Nur der Torwart", "Nur der Kapitän"], correct: 2 },
+      { q: "Wie oft hat Deutschland die Fußball-Weltmeisterschaft gewonnen?", options: ["Zweimal", "Dreimal", "Viermal", "Fünfmal"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Mannschaft", meaning: "Eine Gruppe von Spielern, die zusammen als Team spielen" },
+      { word: "Torwart", meaning: "Der Spieler, der das eigene Tor bewacht" },
+      { word: "Ausdauer", meaning: "Die Fähigkeit, lange Zeit Sport zu treiben, ohne müde zu werden" }
+    ]
+  },
+  {
+    id: 39,
+    title: "Unser Körper braucht Schlaf",
+    icon: "&#x1F634;",
+    difficulty: "easy",
+    wordCount: 90,
+    text: "Schlaf ist für den Körper genauso wichtig wie Essen und Trinken. Während wir schlafen, erholt sich der Körper und verarbeitet die Erlebnisse des Tages. Das Gehirn speichert im Schlaf neue Informationen – deshalb lernt man nach einer guten Nacht besser. Kinder zwischen 6 und 12 Jahren brauchen etwa 9 bis 11 Stunden Schlaf pro Nacht. Wer zu wenig schläft, ist tagsüber unaufmerksam und schnell gereizt. Ein regelmäßiger Schlafrhythmus hilft dem Körper, sich gut zu erholen. Das Schlafzimmer sollte ruhig, dunkel und kühl sein. Kurz vor dem Einschlafen sollte man keine Bildschirme mehr benutzen.",
+    questions: [
+      { q: "Wie viele Stunden Schlaf brauchen Kinder zwischen 6 und 12 Jahren?", options: ["6 bis 8 Stunden", "9 bis 11 Stunden", "12 bis 14 Stunden", "5 bis 7 Stunden"], correct: 1 },
+      { q: "Was macht das Gehirn im Schlaf?", options: ["Gar nichts", "Es speichert neue Informationen", "Es wächst", "Es steuert die Verdauung"], correct: 1 },
+      { q: "Wie sollte das Schlafzimmer sein?", options: ["Hell und warm", "Laut und kühl", "Ruhig, dunkel und kühl", "Groß und hell"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Schlafrhythmus", meaning: "Die regelmäßige Zeit, zu der man schlafen geht und aufwacht" },
+      { word: "verarbeiten", meaning: "Erlebnisse und Informationen ordnen und verstehen" },
+      { word: "gereizt", meaning: "Leicht wütend und ungeduldig sein" }
+    ]
+  },
+  {
+    id: 40,
+    title: "Winterschlaf der Tiere",
+    icon: "&#x2744;&#xFE0F;",
+    difficulty: "easy",
+    wordCount: 89,
+    text: "Im Winter wird es kalt und Futter ist schwer zu finden. Manche Tiere lösen dieses Problem mit dem Winterschlaf. Bären, Igel und Murmeltiere schlafen den ganzen Winter durch. Vorher fressen sie sich viel Fett an. Im Winterschlaf verlangsamt sich der Herzschlag stark, und das Tier braucht kaum Energie. Ein Igel kann bis zu sechs Monate schlafen! Andere Tiere wie Eichhörnchen halten Winterruhe. Sie schlafen nicht so tief, sondern wachen manchmal auf und fressen ihre Vorräte. Zugvögel hingegen fliegen in wärmere Länder. Jedes Tier hat seine eigene Strategie für die kalte Jahreszeit.",
+    questions: [
+      { q: "Welches der folgenden Tiere hält Winterschlaf?", options: ["Hase", "Igel", "Fuchs", "Reh"], correct: 1 },
+      { q: "Was ist der Unterschied zwischen Winterschlaf und Winterruhe?", options: ["Es gibt keinen Unterschied", "Beim Winterschlaf schläft das Tier tiefer", "Winterruhe dauert länger", "Winterschlaf gibt es nur bei Vögeln"], correct: 1 },
+      { q: "Was machen Zugvögel im Winter?", options: ["Sie schlafen tief", "Sie fressen mehr", "Sie fliegen in wärmere Länder", "Sie bauen neue Nester"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Winterschlaf", meaning: "Ein tiefer, langer Schlaf von Tieren während der Wintermonate" },
+      { word: "Vorräte", meaning: "Gesammeltes Futter, das für später aufbewahrt wird" },
+      { word: "Zugvögel", meaning: "Vögel, die im Herbst in wärmere Länder fliegen und im Frühling zurückkommen" }
+    ]
+  },
+
+  // ── 10 NEUE MITTEL-TEXTE (IDs 41–50) ──────────────────────────
+  {
+    id: 41,
+    title: "Kunstturnen – Technik und Training",
+    icon: "&#x1F938;",
+    difficulty: "medium",
+    wordCount: 100,
+    text: "Kunstturnen ist eine anspruchsvolle Sportart, die jahrelanges Training erfordert. Die Sportlerinnen und Sportler müssen nicht nur körperlich stark sein, sondern auch sehr präzise arbeiten. Ein Fehler am Stufenbarren oder am Reck kann gefährlich sein, deshalb lernen Turner stets unter der Aufsicht eines Trainers. Die wichtigsten Grundelemente sind der Handstand, das Rad und der Salto vorwärts. Der Handstand kräftigt die Schultern und verbessert das Gleichgewicht. Der Salto ist eine Überkopfbewegung, bei der man sich in der Luft einmal um die eigene Körperachse dreht. Weltklasse-Turner trainieren täglich mehrere Stunden. In der Turnhalle ist Disziplin besonders wichtig – man hört auf den Trainer und unterstützt sich gegenseitig.",
+    questions: [
+      { q: "Warum lernen Turner immer unter Aufsicht?", options: ["Weil es so vorgeschrieben ist", "Weil Fehler gefährlich sein können", "Weil es schneller geht", "Weil der Trainer Punkte vergibt"], correct: 1 },
+      { q: "Was verbessert der Handstand?", options: ["Die Schnelligkeit", "Die Ausdauer", "Das Gleichgewicht", "Die Sprungkraft"], correct: 2 },
+      { q: "Was passiert bei einem Salto?", options: ["Man dreht sich seitwärts", "Man dreht sich in der Luft um die eigene Körperachse", "Man springt sehr hoch und landet auf den Händen", "Man rollt auf dem Boden"], correct: 1 }
+    ],
+    vocab: [
+      { word: "präzise", meaning: "Sehr genau und ohne Fehler arbeitend" },
+      { word: "Disziplin", meaning: "Das konsequente Einhalten von Regeln und konzentriertes Arbeiten" },
+      { word: "Grundelemente", meaning: "Die wichtigsten, grundlegenden Übungen, auf denen alle anderen aufbauen" }
+    ]
+  },
+  {
+    id: 42,
+    title: "Gesunde Ernährung in der Schule",
+    icon: "&#x1F957;",
+    difficulty: "medium",
+    wordCount: 97,
+    text: "Was wir essen, beeinflusst unsere Leistung in der Schule deutlich. Ein Gehirn, das gut mit Nährstoffen versorgt wird, arbeitet besser und schneller. Vollkornprodukte wie Vollkornbrot oder Haferflocken geben dem Körper langanhaltende Energie. Zuckerhaltiges Essen hingegen liefert kurz Energie, lässt aber rasch nach – man wird schnell wieder hungrig und müde. In vielen Schulen gibt es heute eine Mensa oder Cafeteria mit warmen Mahlzeiten. Wichtig ist, dass das Schulessen ausgewogen ist: Gemüse, Eiweiß und Kohlenhydrate sollten alle enthalten sein. Kinder, die morgens frühstücken, erzielen nachweislich bessere Schulleistungen. Deshalb empfehlen Ernährungsexperten, das Frühstück niemals auszulassen.",
+    questions: [
+      { q: "Was ist ein Nachteil von zuckerhaltigem Essen?", options: ["Es ist sehr teuer", "Die Energie lässt schnell nach und man wird wieder müde", "Es schmeckt nicht gut", "Es ist schwer zu kaufen"], correct: 1 },
+      { q: "Warum sind Vollkornprodukte gut für die Schule?", options: ["Sie schmecken besonders gut", "Sie liefern langanhaltende Energie", "Sie sind sehr günstig", "Sie enthalten viel Zucker"], correct: 1 },
+      { q: "Was sollen Schüler laut Experten niemals auslassen?", options: ["Das Mittagessen", "Die Sportstunde", "Das Frühstück", "Den Nachtisch"], correct: 2 }
+    ],
+    vocab: [
+      { word: "ausgewogen", meaning: "So zusammengestellt, dass alle wichtigen Nährstoffe enthalten sind" },
+      { word: "Eiweiß", meaning: "Ein wichtiger Nährstoff, der in Fleisch, Eiern und Hülsenfrüchten vorkommt" },
+      { word: "nachweislich", meaning: "Durch Studien und Untersuchungen bewiesen" }
+    ]
+  },
+  {
+    id: 43,
+    title: "Leichtathletik – Laufen, Springen, Werfen",
+    icon: "&#x1F3C3;",
+    difficulty: "medium",
+    wordCount: 97,
+    text: "Leichtathletik ist eine der grundlegendsten Sportarten überhaupt. Sie umfasst Laufdisziplinen, Sprungdisziplinen und Wurfdisziplinen. Beim Sprint läuft man eine kurze Strecke so schnell wie möglich. Der 100-Meter-Sprint ist einer der bekanntesten Wettkämpfe der Welt. Beim Weitsprung nimmt man Anlauf, springt ab und versucht, so weit wie möglich zu landen. Beim Kugelstoßen stößt man eine schwere Metallkugel möglichst weit. Leichtathletik wird bei den Olympischen Spielen ausgetragen. Der schnellste Mensch der Welt war Usain Bolt aus Jamaika, der 100 Meter in nur 9,58 Sekunden lief. Leichtathletik ist günstig, denn man braucht außer Sportschuhen kaum Ausrüstung.",
+    questions: [
+      { q: "Was gehört nicht zur Leichtathletik?", options: ["Sprint", "Weitsprung", "Schwimmen", "Kugelstoßen"], correct: 2 },
+      { q: "Wie schnell lief Usain Bolt die 100 Meter?", options: ["9,58 Sekunden", "10,2 Sekunden", "8,9 Sekunden", "11 Sekunden"], correct: 0 },
+      { q: "Was braucht man für Leichtathletik?", options: ["Viel teure Ausrüstung", "Nur Sportschuhe", "Ein Fahrrad", "Einen Ball"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Disziplinen", meaning: "Die verschiedenen Sportarten oder Wettkämpfe innerhalb einer Sportart" },
+      { word: "Anlauf", meaning: "Das schnelle Rennen vor einem Sprung oder Wurf" },
+      { word: "ausgetragen", meaning: "In einem offiziellen Wettkampf stattgefunden" }
+    ]
+  },
+  {
+    id: 44,
+    title: "Wie Brot gebacken wird",
+    icon: "&#x1F35E;",
+    difficulty: "medium",
+    wordCount: 97,
+    text: "Brot ist seit Tausenden von Jahren ein wichtiges Grundnahrungsmittel. In Deutschland gibt es über 3.000 verschiedene Brotsorten – mehr als in jedem anderen Land der Welt. Brot besteht hauptsächlich aus Mehl, Wasser, Salz und Hefe. Die Hefe ist ein winziger Pilz, der den Teig aufgehen lässt. Wenn Hefe Zucker abbaut, produziert sie Kohlendioxidgas. Dieses Gas bildet kleine Bläschen im Teig, die ihn locker und weich machen. Danach wird der Teig im Ofen gebacken. Vollkornbrot wird aus dem ganzen Getreidekorn gemahlen und ist nährstoffreicher als Weißbrot. Viele Bäcker in Deutschland backen ihr Brot noch von Hand nach alten Rezepten.",
+    questions: [
+      { q: "Wie viele Brotsorten gibt es in Deutschland?", options: ["Über 300", "Über 1.000", "Über 3.000", "Über 10.000"], correct: 2 },
+      { q: "Was macht die Hefe im Teig?", options: ["Sie macht den Teig süß", "Sie lässt den Teig aufgehen", "Sie gibt dem Brot seine braune Farbe", "Sie macht den Teig salzig"], correct: 1 },
+      { q: "Was ist gesünder – Vollkornbrot oder Weißbrot?", options: ["Weißbrot", "Vollkornbrot", "Beide sind gleich gesund", "Keines von beiden ist gesund"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Hefe", meaning: "Ein winziger Pilz, der Teig aufgehen lässt und ihn locker macht" },
+      { word: "Grundnahrungsmittel", meaning: "Ein Lebensmittel, das täglich gegessen wird und sehr wichtig für die Ernährung ist" },
+      { word: "Getreidekorn", meaning: "Der Samen einer Getreidepflanze wie Weizen oder Roggen" }
+    ]
+  },
+  {
+    id: 45,
+    title: "Die Fußball-Weltmeisterschaft",
+    icon: "&#x1F3C6;",
+    difficulty: "medium",
+    wordCount: 100,
+    text: "Die Fußball-Weltmeisterschaft ist das größte Sportereignis der Welt. Sie findet alle vier Jahre statt. Nationalmannschaften aus aller Welt treten gegeneinander an. Zunächst gibt es eine Gruppenphase, in der die Mannschaften Punkte sammeln. Die besten Teams kommen danach in die K.-o.-Runde, in der jede Niederlage das Ausscheiden bedeutet. Das Finale ist das spannendste Spiel des gesamten Turniers. Brasilien hat die meisten Weltmeisterschaften gewonnen – insgesamt fünfmal. Deutschland ist viermal Weltmeister geworden. Bei der WM 2014 in Brasilien besiegte Deutschland den Gastgeber im Halbfinale mit dem unglaublichen Ergebnis von 7:1. Diese Partie gilt als eines der spektakulärsten Spiele der WM-Geschichte.",
+    questions: [
+      { q: "Wie oft findet die Fußball-Weltmeisterschaft statt?", options: ["Jedes Jahr", "Alle zwei Jahre", "Alle vier Jahre", "Alle acht Jahre"], correct: 2 },
+      { q: "Welches Land hat die meisten WM-Titel gewonnen?", options: ["Deutschland", "Argentinien", "Brasilien", "Spanien"], correct: 2 },
+      { q: "Mit welchem Ergebnis besiegte Deutschland Brasilien bei der WM 2014?", options: ["3:0", "5:2", "7:1", "4:1"], correct: 2 }
+    ],
+    vocab: [
+      { word: "K.-o.-Runde", meaning: "Der Teil eines Turniers, in dem das verlierende Team ausscheidet" },
+      { word: "Niederlage", meaning: "Das Verlieren eines Spiels oder Wettkampfs" },
+      { word: "Gastgeber", meaning: "Das Land, das ein Turnier oder eine Veranstaltung ausrichtet" }
+    ]
+  },
+  {
+    id: 46,
+    title: "Vitamine und Mineralstoffe",
+    icon: "&#x1F955;",
+    difficulty: "medium",
+    wordCount: 103,
+    text: "Unser Körper braucht viele verschiedene Nährstoffe, um gesund zu bleiben. Vitamine und Mineralstoffe sind dabei besonders wichtig. Vitamin C stärkt das Immunsystem und schützt uns vor Krankheiten. Es steckt in Zitrusfrüchten wie Orangen und Zitronen, aber auch in Paprika und Brokkoli. Vitamin D wird für starke Knochen benötigt. Unser Körper stellt es selbst her, wenn wir uns im Sonnenlicht aufhalten. Calcium ist ein Mineralstoff, der ebenfalls für gesunde Knochen und Zähne wichtig ist. Er steckt in Milch, Käse und grünem Gemüse. Eisen ist ein Mineralstoff, der das Blut gesund hält. Zu wenig Eisen macht müde und blass. Abwechslungsreiches Essen versorgt uns mit allen lebensnotwendigen Stoffen.",
+    questions: [
+      { q: "In welchen Lebensmitteln steckt viel Vitamin C?", options: ["Fleisch und Wurst", "Orangen und Paprika", "Brot und Nudeln", "Butter und Öl"], correct: 1 },
+      { q: "Wie stellt der Körper Vitamin D her?", options: ["Durch Sport", "Durch Sonnenlicht", "Durch viel Trinken", "Durch Schlafen"], correct: 1 },
+      { q: "Welcher Mineralstoff ist wichtig für Knochen und Zähne?", options: ["Eisen", "Zink", "Calcium", "Magnesium"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Immunsystem", meaning: "Das Abwehrsystem des Körpers, das uns vor Krankheiten und Keimen schützt" },
+      { word: "Zitrusfrüchte", meaning: "Früchte wie Orangen, Zitronen und Grapefruits mit viel Vitamin C" },
+      { word: "abwechslungsreich", meaning: "Viele verschiedene Lebensmittel enthaltend, nicht immer das Gleiche" }
+    ]
+  },
+  {
+    id: 47,
+    title: "Schwimmen – vier Stile",
+    icon: "&#x1F3CA;",
+    difficulty: "medium",
+    wordCount: 100,
+    text: "Im Schwimmen gibt es vier Hauptstile: Kraul, Rücken, Brust und Delfin. Das Kraulschwimmen ist der schnellste Stil. Die Arme werden abwechselnd über das Wasser geführt, während die Beine schnell auf und ab schlagen. Beim Rückenschwimmen liegt man auf dem Rücken und dreht die Arme wie Windmühlenflügel. Das Brustschwimmen ist der älteste Schwimmstil und wird oft als erstes gelernt. Arme und Beine bewegen sich gleichzeitig und symmetrisch. Das Delfinschwimmen ist der anspruchsvollste Stil: Die Arme werden gleichzeitig über das Wasser geworfen, und die Beine bewegen sich wie der Schwanz eines Delfins. Bei den Olympischen Spielen werden alle vier Stile in eigenen Wettkämpfen ausgetragen.",
+    questions: [
+      { q: "Welcher Schwimmstil ist der schnellste?", options: ["Brust", "Rücken", "Kraul", "Delfin"], correct: 2 },
+      { q: "Welcher Schwimmstil wird oft als erstes gelernt?", options: ["Kraul", "Delfin", "Rücken", "Brust"], correct: 3 },
+      { q: "Was ist besonders am Delfinschwimmen?", options: ["Man liegt auf dem Rücken", "Die Beine bewegen sich wie ein Delfinsch­wanz", "Man dreht sich im Wasser um die eigene Achse", "Es ist der langsamste Stil"], correct: 1 }
+    ],
+    vocab: [
+      { word: "symmetrisch", meaning: "Auf beiden Seiten gleich, spiegelgleich" },
+      { word: "Schwimmstil", meaning: "Eine bestimmte Art, wie man sich im Wasser fortbewegt" },
+      { word: "anspruchsvoll", meaning: "Schwierig und viel Können oder Übung erfornd"] }
+    ]
+  },
+  {
+    id: 48,
+    title: "Der menschliche Körper",
+    icon: "&#x1FAB4;",
+    difficulty: "medium",
+    wordCount: 98,
+    text: "Der menschliche Körper ist ein hochkomplexes System aus vielen Organen. Das Skelett aus 206 Knochen gibt dem Körper seine Form und schützt die inneren Organe. Die Muskeln ermöglichen alle Bewegungen. Das Herz ist ein Hohlmuskel, der unermüdlich schlägt – etwa 100.000 Mal pro Tag! Es pumpt das Blut durch den gesamten Körper. Die Lunge nimmt Sauerstoff aus der Luft auf und gibt Kohlendioxid ab. Das Gehirn steuert alle Körperfunktionen und ist für Denken, Fühlen und Erinnern zuständig. Die Verdauungsorgane zerkleinern die Nahrung und nehmen wichtige Nährstoffe auf. Alle Systeme arbeiten zusammen, damit wir gesund leben können.",
+    questions: [
+      { q: "Wie viele Knochen hat ein Mensch?", options: ["106", "156", "206", "306"], correct: 2 },
+      { q: "Wie oft schlägt das Herz pro Tag?", options: ["10.000 Mal", "50.000 Mal", "100.000 Mal", "500.000 Mal"], correct: 2 },
+      { q: "Was nimmt die Lunge auf?", options: ["Nährstoffe", "Sauerstoff", "Blut", "Wasser"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Skelett", meaning: "Das Gerüst aus Knochen, das dem Körper Form und Stabilität gibt" },
+      { word: "unermüdlich", meaning: "Ohne Pause, immer weiter arbeitend" },
+      { word: "Kohlendioxid", meaning: "Ein Gas, das der Körper beim Atmen ausatmet" }
+    ]
+  },
+  {
+    id: 49,
+    title: "Teamgeist im Sport",
+    icon: "&#x1F91D;",
+    difficulty: "medium",
+    wordCount: 98,
+    text: "Sport bringt Menschen zusammen. Ob im Verein oder auf dem Schulhof – gemeinsames Spielen schafft starke Verbindungen. Eine Mannschaft ist mehr als die Summe ihrer Spieler: Vertrauen, Kommunikation und gegenseitige Unterstützung entscheiden oft über Sieg oder Niederlage. Gute Teamarbeit bedeutet, die Stärken jedes Einzelnen zu nutzen und Schwächen auszugleichen. Manchmal muss man zurückstecken und einem anderen den Vortritt lassen – zum Beispiel wenn der Mitspieler in einer besseren Position ist. Fair Play ist besonders wichtig: Man spielt nach den Regeln, respektiert den Gegner und akzeptiert auch eine Niederlage. Viele Freundschaften, die im Sport entstehen, halten ein Leben lang.",
+    questions: [
+      { q: "Was entscheidet laut Text über Sieg oder Niederlage?", options: ["Körperliche Stärke allein", "Teure Ausrüstung", "Vertrauen, Kommunikation und Unterstützung", "Die Größe des Teams"], correct: 2 },
+      { q: "Was bedeutet Fair Play?", options: ["Schnell spielen", "Nach den Regeln spielen und den Gegner respektieren", "Um jeden Preis gewinnen", "Nur in der eigenen Hälfte bleiben"], correct: 1 },
+      { q: "Was ist eine wichtige Fähigkeit in einem Team?", options: ["Immer der Schnellste zu sein", "Zurückstecken können und andere unterstützen", "Laut Anweisungen geben", "Alleine spielen"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Fair Play", meaning: "Ehrliches, faires Spielen nach den Regeln und mit Respekt gegenüber anderen" },
+      { word: "Vertrauen", meaning: "Der Glaube daran, dass der andere zuverlässig und ehrlich ist" },
+      { word: "ausgleichen", meaning: "Einen Nachteil durch eine Stärke an anderer Stelle wettmachen" }
+    ]
+  },
+  {
+    id: 50,
+    title: "Wintersport und Olympische Winterspiele",
+    icon: "&#x26F7;&#xFE0F;",
+    difficulty: "medium",
+    wordCount: 96,
+    text: "Die Olympischen Winterspiele finden alle vier Jahre statt. Athleten aus aller Welt treten in verschiedenen Wintersportarten gegeneinander an. Zu den bekanntesten Disziplinen gehören Ski Alpin, Langlauf, Eiskunstlauf und Biathlon. Beim Biathlon kombinieren die Sportler Skilanglauf mit Schießen – eine anspruchsvolle Mischung aus Ausdauer und Präzision. Beim Eiskunstlauf führen die Sportlerinnen und Sportler zu Musik Pirouetten, Sprünge und elegante Schrittfolgen auf dem Eis aus. Die ersten Olympischen Winterspiele fanden 1924 im französischen Chamonix statt. Deutschland gehört zu den erfolgreichsten Nationen bei den Winterspielen, vor allem in Ski Alpin und Biathlon.",
+    questions: [
+      { q: "Was kombiniert Biathlon?", options: ["Skifahren und Schlittschuhlaufen", "Skilanglauf und Schießen", "Snowboard und Eislaufen", "Curling und Skifahren"], correct: 1 },
+      { q: "Wann fanden die ersten Olympischen Winterspiele statt?", options: ["1900 in Paris", "1924 in Chamonix", "1936 in Deutschland", "1952 in Oslo"], correct: 1 },
+      { q: "In welchen Sportarten ist Deutschland bei den Winterspielen besonders erfolgreich?", options: ["Eishockey und Curling", "Eiskunstlauf und Bob", "Ski Alpin und Biathlon", "Skispringen und Rodeln"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Biathlon", meaning: "Eine Wintersportart, die Skilanglauf und Schießen miteinander verbindet" },
+      { word: "Pirouetten", meaning: "Drehungen auf einem Fuß beim Eiskunstlauf" },
+      { word: "Präzision", meaning: "Sehr genaues, fehlerfreies Arbeiten oder Schießen" }
+    ]
+  },
+
+  // ── 10 NEUE SCHWER-TEXTE (IDs 51–60) ──────────────────────────
+  {
+    id: 51,
+    title: "Kunstturnen – Geschichte und Olympia",
+    icon: "&#x1F938;",
+    difficulty: "hard",
+    wordCount: 122,
+    text: "Kunstturnen hat eine lange und bewegte Geschichte. Friedrich Ludwig Jahn, bekannt als „Turnvater Jahn", begründete im frühen 19. Jahrhundert die Turnbewegung in Deutschland. Er erfand viele der Geräte, die heute noch benutzt werden, darunter das Reck und die Ringe. Bei den ersten Olympischen Spielen der Neuzeit in Athen 1896 war Kunstturnen bereits im Programm vertreten. Seitdem hat sich die Sportart erheblich weiterentwickelt. Heute bewerten Kampfrichter die Übungen nach zwei Kriterien: dem Schwierigkeitswert und dem Ausführungswert. Je schwieriger eine Übung und je präziser sie ausgeführt wird, desto mehr Punkte gibt es. Legendäre Turner wie Nadia Comaneci aus Rumänien schrieben Geschichte: Sie erhielt 1976 bei den Olympischen Spielen in Montréal als erste Turnerin überhaupt eine perfekte Zehn. Heute werden die Punktesysteme anders berechnet, um noch höhere Schwierigkeitsgrade zu ermöglichen.",
+    questions: [
+      { q: "Wer war „Turnvater Jahn"?", options: ["Ein Olympiasieger aus dem 20. Jahrhundert", "Der Begründer der deutschen Turnbewegung", "Ein rumänischer Turner", "Ein Kampfrichter bei Olympia"], correct: 1 },
+      { q: "Was erhielt Nadia Comaneci 1976 als erste Turnerin?", options: ["Eine Goldmedaille", "Eine perfekte Zehn", "Den WM-Titel", "Den Weltrekord im Schwierigkeitswert"], correct: 1 },
+      { q: "Nach welchen Kriterien werden Turnübungen bewertet?", options: ["Schönheit und Tempo", "Schwierigkeitswert und Ausführungswert", "Alter und Erfahrung des Turners", "Körpergröße und Gewicht"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Kampfrichter", meaning: "Personen, die in Sportwettkämpfen Übungen bewerten und Punkte vergeben" },
+      { word: "Schwierigkeitswert", meaning: "Eine Zahl, die angibt, wie technisch anspruchsvoll eine Turnübung ist" },
+      { word: "Ausführungswert", meaning: "Eine Bewertung, die angibt, wie präzise und fehlerfrei eine Übung ausgeführt wurde" }
+    ]
+  },
+  {
+    id: 52,
+    title: "Die Ernährungspyramide",
+    icon: "&#x1F9C0;",
+    difficulty: "hard",
+    wordCount: 118,
+    text: "Die Ernährungspyramide ist ein Modell, das zeigt, wie eine ausgewogene Ernährung aussehen sollte. Sie ist in mehrere Ebenen eingeteilt. An der Basis – also ganz unten – stehen Wasser und ungesüßte Getränke: Davon sollte man täglich am meisten zu sich nehmen. Die nächste Ebene bilden Gemüse und Obst, die reich an Vitaminen, Ballaststoffen und Mineralstoffen sind. Dann folgen Getreideprodukte wie Brot, Nudeln und Reis – möglichst in der Vollkornvariante. Auf der vierten Ebene befinden sich Milchprodukte sowie tierische Eiweiße wie Fleisch, Fisch und Eier; diese sollte man in Maßen genießen. An der Spitze der Pyramide stehen Fette, Süßigkeiten und Fast Food: Sie sollten nur sehr selten und in kleinen Mengen gegessen werden. Die Pyramide verdeutlicht: Ein gesunder Speiseplan enthält viele pflanzliche Lebensmittel und wenig stark verarbeitete Produkte.",
+    questions: [
+      { q: "Was steht an der Basis der Ernährungspyramide?", options: ["Obst und Gemüse", "Fleisch und Fisch", "Wasser und ungesüßte Getränke", "Süßigkeiten"], correct: 2 },
+      { q: "Was sollte laut Pyramide nur selten gegessen werden?", options: ["Brot und Nudeln", "Milchprodukte", "Gemüse und Obst", "Fette und Süßigkeiten"], correct: 3 },
+      { q: "Was bedeutet „in Maßen genießen"?", options: ["Gar nicht essen", "Sehr viel davon essen", "Nicht zu viel und nicht zu wenig", "Nur an Wochenenden"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Ballaststoffe", meaning: "Unverdauliche Pflanzenteile, die die Verdauung fördern und sättigen" },
+      { word: "Vollkornvariante", meaning: "Die Variante aus dem ganzen Getreidekorn, mit mehr Nährstoffen als Weißmehlprodukte" },
+      { word: "verarbeitet", meaning: "Durch industrielle Verfahren stark verändert, oft mit Zusatzstoffen versetzt" }
+    ]
+  },
+  {
+    id: 53,
+    title: "Der Marathon – Geschichte und Herausforderung",
+    icon: "&#x1F3C5;",
+    difficulty: "hard",
+    wordCount: 120,
+    text: "Der Marathon ist mit einer Streckenlänge von 42,195 Kilometern eine der anspruchsvollsten Laufdisziplinen überhaupt. Die Ursprungsgeschichte reicht bis ins antike Griechenland zurück. Der Sage nach lief der griechische Soldat Pheidippides im Jahr 490 v. Chr. von der Stadt Marathon nach Athen, um den Sieg über die Perser zu melden. Nach der Überbringung der Botschaft soll er erschöpft zusammengebrochen und gestorben sein. Ob diese Überlieferung der Wahrheit entspricht, ist historisch nicht gesichert – aber sie gab dem Lauf seinen Namen. Bei den ersten Olympischen Spielen der Neuzeit 1896 wurde der Marathon ins Programm aufgenommen. Heute laufen Millionen von Freizeitsportlern aus aller Welt Marathons in Städten wie Berlin, New York oder Tokio. Den Weltrekord hält der Kenianer Eliud Kipchoge, der die Strecke in unter zwei Stunden absolvierte. Die Vorbereitung auf einen Marathon erfordert monatelanges, systematisches Training.",
+    questions: [
+      { q: "Woher kommt der Name „Marathon"?", options: ["Von einem griechischen Gott", "Von einer Stadt in Griechenland", "Von einem Sportler der Antike", "Von einem Fluss in Griechenland"], correct: 1 },
+      { q: "Wann wurde der Marathon bei Olympia eingeführt?", options: ["1876", "1896", "1900", "1924"], correct: 1 },
+      { q: "Welcher Läufer hält den Marathonweltrekord?", options: ["Haile Gebrselassie", "Mo Farah", "Eliud Kipchoge", "Dennis Kimetto"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Freizeitsportler", meaning: "Menschen, die Sport nicht beruflich, sondern in ihrer Freizeit betreiben" },
+      { word: "systematisch", meaning: "Nach einem klaren Plan und einer festgelegten Methode vorgehend" },
+      { word: "absolvieren", meaning: "Eine Aufgabe oder Strecke erfolgreich beenden" }
+    ]
+  },
+  {
+    id: 54,
+    title: "Die Verdauung – ein langer Weg",
+    icon: "&#x1F35D;",
+    difficulty: "hard",
+    wordCount: 115,
+    text: "Die Verdauung beginnt bereits im Mund. Wenn wir kauen, zerkleinern die Zähne die Nahrung, und der Speichel setzt die chemische Verdauung in Gang. Enzyme im Speichel beginnen, Kohlenhydrate aufzuspalten. Der Speisebrei gelangt dann durch die Speiseröhre in den Magen, wo er mit Magensäure vermischt wird. Die Magensäure tötet Bakterien ab und schließt Eiweiße auf. Anschließend gelangt der Brei in den Dünndarm, der bis zu sechs Meter lang sein kann. Dort nehmen winzige Ausstülpungen, die sogenannten Darmzotten, Nährstoffe auf und geben sie ins Blut ab. Im Dickdarm wird dem Speisebrei Wasser entzogen. Was der Körper nicht verwerten kann, wird ausgeschieden. Die gesamte Verdauungszeit beträgt beim Menschen zwischen 24 und 72 Stunden. Eine ballaststoffreiche Ernährung fördert eine gesunde Verdauung.",
+    questions: [
+      { q: "Wo beginnt die Verdauung?", options: ["Im Magen", "Im Dünndarm", "Im Mund", "In der Speiseröhre"], correct: 2 },
+      { q: "Was macht die Magensäure?", options: ["Sie gibt Nährstoffe ins Blut ab", "Sie tötet Bakterien ab und schließt Eiweiße auf", "Sie zieht Wasser aus der Nahrung", "Sie erzeugt Enzyme"], correct: 1 },
+      { q: "Was sind Darmzotten?", options: ["Bakterien im Darm", "Kleine Ausstülpungen, die Nährstoffe aufnehmen", "Enzyme im Speichel", "Muskeln des Magens"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Enzyme", meaning: "Biologische Stoffe, die chemische Reaktionen im Körper beschleunigen" },
+      { word: "Darmzotten", meaning: "Winzige Ausstülpungen im Dünndarm, die Nährstoffe ins Blut aufnehmen" },
+      { word: "Speisebrei", meaning: "Der durch Kauen und Verdauungssäfte entstandene Nahrungsbrei im Magen" }
+    ]
+  },
+  {
+    id: 55,
+    title: "Doping im Sport",
+    icon: "&#x1F6AB;",
+    difficulty: "hard",
+    wordCount: 115,
+    text: "Doping bezeichnet die Einnahme verbotener Substanzen oder den Einsatz unerlaubter Methoden, um die sportliche Leistung zu steigern. Im Hochleistungssport stehen Athleten unter enormem Druck, immer bessere Ergebnisse zu erzielen. Manche greifen deshalb zu unerlaubten Mitteln. Anabolika sind Substanzen, die das Muskelwachstum fördern, aber gefährliche Nebenwirkungen haben: Sie können zu Herzproblemen, Leberschäden und psychischen Störungen führen. EPO ist ein weiteres Dopingmittel, das die Zahl der roten Blutkörperchen erhöht und dadurch die Ausdauer steigert. Internationale Sportverbände bekämpfen Doping mit strengen Kontrollen. Athleten werden vor, während und nach Wettkämpfen getestet. Wer beim Doping erwischt wird, riskiert eine Sperre, den Verlust von Medaillen und die Zerstörung seiner sportlichen Karriere. Sauberer Sport ist fairer Sport.",
+    questions: [
+      { q: "Was sind Anabolika?", options: ["Vitaminpräparate für Sportler", "Substanzen, die das Muskelwachstum fördern", "Schmerzmittel nach Verletzungen", "Erlaubte Ernährungsergänzungen"], correct: 1 },
+      { q: "Was sind mögliche Nebenwirkungen von Anabolika?", options: ["Bessere Konzentration", "Herzprobleme und Leberschäden", "Erhöhte Ausdauer ohne Risiken", "Schnellerer Stoffwechsel"], correct: 1 },
+      { q: "Welche Konsequenz droht einem Athleten beim Doping?", options: ["Eine mündliche Verwarnung", "Höheres Startgeld", "Eine Sperre und der Verlust von Medaillen", "Ein Pflichtpraktikum"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Anabolika", meaning: "Verbotene Substanzen, die das Muskelwachstum beschleunigen und gefährliche Nebenwirkungen haben" },
+      { word: "Sperre", meaning: "Ein zeitlich begrenztes Verbot, an Wettkämpfen teilzunehmen" },
+      { word: "EPO", meaning: "Ein Hormon, das die Ausdauer steigert und im Sport als Dopingmittel verboten ist" }
+    ]
+  },
+  {
+    id: 56,
+    title: "Nachhaltige Ernährung",
+    icon: "&#x1F331;",
+    difficulty: "hard",
+    wordCount: 115,
+    text: "Unsere Essgewohnheiten haben nicht nur Auswirkungen auf unsere Gesundheit, sondern auch auf den Planeten. Die Lebensmittelproduktion ist für etwa ein Drittel der weltweiten Treibhausgasemissionen verantwortlich. Rindfleisch hat einen besonders hohen CO₂-Fußabdruck: Für die Produktion eines einzigen Kilogramms werden bis zu 15.000 Liter Wasser und große Weideflächen benötigt. Pflanzliche Lebensmittel wie Hülsenfrüchte, Gemüse und Getreide sind deutlich klimafreundlicher. Eine nachhaltige Ernährung bedeutet, mehr pflanzliche und weniger tierische Produkte zu essen, saisonales und regionales Obst und Gemüse zu bevorzugen und Lebensmittelverschwendung zu vermeiden. In Deutschland werden jährlich etwa zwölf Millionen Tonnen Lebensmittel weggeworfen – das entspricht 75 Kilogramm pro Person. Durch bewusstes Einkaufen und Kochen kann jeder Einzelne einen Beitrag zum Klimaschutz leisten.",
+    questions: [
+      { q: "Was hat einen besonders hohen CO₂-Fußabdruck?", options: ["Gemüse und Obst", "Rindfleisch", "Brot und Nudeln", "Milch und Käse"], correct: 1 },
+      { q: "Was bedeutet nachhaltige Ernährung laut Text?", options: ["Nur vegetarisch essen", "Mehr Pflanzliches, regionale Produkte, weniger Verschwendung", "Kein Fleisch und kein Fisch essen", "Nur teuer und biologisch einkaufen"], correct: 1 },
+      { q: "Wie viele Tonnen Lebensmittel werden in Deutschland jährlich weggeworfen?", options: ["1 Million", "5 Millionen", "12 Millionen", "50 Millionen"], correct: 2 }
+    ],
+    vocab: [
+      { word: "CO₂-Fußabdruck", meaning: "Die Menge an Kohlendioxid, die bei der Herstellung eines Produkts entsteht" },
+      { word: "Hülsenfrüchte", meaning: "Pflanzen wie Linsen, Erbsen und Bohnen – proteinreich und klimafreundlich" },
+      { word: "Lebensmittelverschwendung", meaning: "Das unnötige Wegwerfen von noch essbaren Lebensmitteln" }
+    ]
+  },
+  {
+    id: 57,
+    title: "Biomechanik im Turnen",
+    icon: "&#x1F52C;",
+    difficulty: "hard",
+    wordCount: 118,
+    text: "Biomechanik ist die Wissenschaft, die Bewegungen des menschlichen Körpers nach physikalischen Prinzipien untersucht. Im Kunstturnen spielt die Biomechanik eine entscheidende Rolle. Beim Salto nutzen Turner das Prinzip der Massenträgheit: Hält man die Arme eng am Körper, dreht man sich schneller; streckt man sie aus, verlangsamt sich die Rotation. Deshalb ziehen Turner beim Einleiten eines Saltos die Knie zur Brust. Beim Abschwung am Reck nutzen Sportler Schwungenergie: Die kinetische Energie des Abschwungs wird in potenzielle Energie des Aufschwungs umgewandelt. Der Körperschwerpunkt spielt beim Balancieren auf dem Schwebebalken eine zentrale Rolle. Je tiefer er liegt, desto stabiler ist die Position. Das Verständnis dieser Prinzipien hilft Trainern, Übungen gezielt zu verbessern und Verletzungen zu vermeiden.",
+    questions: [
+      { q: "Was passiert, wenn ein Turner beim Salto die Arme eng am Körper hält?", options: ["Er dreht sich langsamer", "Er dreht sich schneller", "Er dreht sich seitwärts", "Er dreht sich gar nicht"], correct: 1 },
+      { q: "Was ist der Körperschwerpunkt?", options: ["Ein Punkt auf dem Boden", "Der Mittelpunkt der Körpermasse", "Ein Turngerät", "Eine Bewertungskategorie"], correct: 1 },
+      { q: "Wozu hilft das Verständnis von Biomechanik?", options: ["Punkte bei Wettkämpfen direkt zu erhöhen", "Übungen zu verbessern und Verletzungen zu vermeiden", "Schneller zu wachsen", "Mehr Medaillen zu gewinnen"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Biomechanik", meaning: "Die Wissenschaft, die Bewegungen lebender Körper nach physikalischen Gesetzen untersucht" },
+      { word: "Massenträgheit", meaning: "Das physikalische Prinzip, dass Körper Änderungen ihres Bewegungszustands widerstehen" },
+      { word: "Körperschwerpunkt", meaning: "Der gedachte Mittelpunkt der gesamten Körpermasse" }
+    ]
+  },
+  {
+    id: 58,
+    title: "Das Herz-Kreislauf-System",
+    icon: "&#x1F493;",
+    difficulty: "hard",
+    wordCount: 116,
+    text: "Das Herz-Kreislauf-System ist lebenswichtig. Das Herz ist ein Muskel, der das Blut durch zwei Kreisläufe pumpt. Im kleinen Kreislauf fließt das Blut zur Lunge, wo es Sauerstoff aufnimmt und Kohlendioxid abgibt. Im großen Kreislauf transportiert das Blut Sauerstoff und Nährstoffe zu allen Organen und Geweben. Regelmäßige körperliche Aktivität stärkt das Herz: Ein trainiertes Herz schlägt in Ruhe langsamer, weil es pro Schlag mehr Blut pumpen kann. Eine ungesunde Lebensweise – zu viel Fett, Zucker, Rauchen und Bewegungsmangel – kann zu Arterienverkalkung führen. Dabei lagern sich Fettpartikel in den Blutgefäßen ab und verengen sie. Im schlimmsten Fall kann dies einen Herzinfarkt auslösen. Ausdauersportarten wie Laufen, Schwimmen und Radfahren sind besonders gut für das Herz-Kreislauf-System.",
+    questions: [
+      { q: "Was passiert im kleinen Kreislauf?", options: ["Das Blut fließt zu den Muskeln", "Das Blut nimmt in der Lunge Sauerstoff auf", "Das Blut transportiert Nährstoffe zu den Organen", "Das Blut fließt zum Gehirn"], correct: 1 },
+      { q: "Warum schlägt ein trainiertes Herz in Ruhe langsamer?", options: ["Es ist kleiner", "Es pumpt pro Schlag mehr Blut", "Es braucht weniger Sauerstoff", "Es ist weniger aktiv"], correct: 1 },
+      { q: "Was ist Arterienverkalkung?", options: ["Eine Herzerkrankung durch Viren", "Ablagerungen in den Blutgefäßen, die diese verengen", "Eine Form von Bluthochdruck", "Ein Eisenmangel im Blut"], correct: 1 }
+    ],
+    vocab: [
+      { word: "Kreislauf", meaning: "Der Weg, den das Blut durch den Körper nimmt und wieder zurück zum Herzen" },
+      { word: "Arterienverkalkung", meaning: "Die Ablagerung von Fett in den Arterienwänden, die diese verengt" },
+      { word: "Herzinfarkt", meaning: "Ein medizinischer Notfall, bei dem ein Teil des Herzmuskels nicht mehr mit Blut versorgt wird" }
+    ]
+  },
+  {
+    id: 59,
+    title: "Die Geschichte der Olympischen Spiele",
+    icon: "&#x1F3DB;&#xFE0F;",
+    difficulty: "hard",
+    wordCount: 123,
+    text: "Die Olympischen Spiele blicken auf eine über 2.700 Jahre alte Geschichte zurück. Die antiken Spiele fanden ab etwa 776 v. Chr. alle vier Jahre in Olympia in Griechenland statt und waren religiösen Ursprungs – gewidmet dem Göttervater Zeus. Die Athleten kämpften in verschiedenen Disziplinen und kamen aus allen griechischen Stadtstaaten. Im Jahr 393 n. Chr. verbot der römische Kaiser Theodosius I. die Spiele als heidnischen Kult. Fast eineinhalb Jahrtausende später ließ der französische Baron Pierre de Coubertin die Olympischen Spiele 1896 in Athen wiederaufleben. Seine Vision: Sport als verbindendes Element zwischen den Nationen und Friedensförderung durch fairen Wettkampf. Heute nehmen über 200 Länder und Tausende von Athleten teil. Das olympische Motto lautet „Citius, Altius, Fortius" – auf Deutsch: Schneller, Höher, Stärker. Im Jahr 1994 wurde es um das Wort „Communiter" (Gemeinsam) ergänzt.",
+    questions: [
+      { q: "Wem waren die antiken Olympischen Spiele gewidmet?", options: ["Apollon", "Poseidon", "Zeus", "Hermes"], correct: 2 },
+      { q: "Wer ließ die Olympischen Spiele 1896 wiederaufleben?", options: ["König Georg I.", "Kaiser Theodosius", "Pierre de Coubertin", "Nadia Comaneci"], correct: 2 },
+      { q: "Was bedeutet das Motto „Citius, Altius, Fortius"?", options: ["Stärker, Schneller, Weiter", "Schneller, Höher, Stärker", "Ehre, Fairness, Respekt", "Frieden, Freundschaft, Gleichheit"], correct: 1 }
+    ],
+    vocab: [
+      { word: "antik", meaning: "Aus der Zeit des alten Griechenlands oder Roms stammend" },
+      { word: "heidnisch", meaning: "Nicht zur christlichen Religion gehörend; aus vorchristlicher Zeit" },
+      { word: "Stadtstaaten", meaning: "Unabhängige Städte mit eigenem Regierungssystem, wie im alten Griechenland" }
+    ]
+  },
+  {
+    id: 60,
+    title: "Essstörungen verstehen",
+    icon: "&#x1F37D;&#xFE0F;",
+    difficulty: "hard",
+    wordCount: 118,
+    text: "Essstörungen sind ernstzunehmende psychische Erkrankungen, die das Verhältnis zur Nahrung und zum eigenen Körper beeinträchtigen. Die bekanntesten Formen sind Magersucht (Anorexia nervosa), Bulimie (Bulimia nervosa) und Binge-Eating. Bei Magersucht essen Betroffene extrem wenig, weil sie sich trotz starkem Untergewicht als zu dick wahrnehmen. Bulimie ist durch Essanfälle mit anschließendem Erbrechen oder anderen gegensteuernden Maßnahmen gekennzeichnet. Binge-Eating bezeichnet unkontrollierte Essanfälle ohne solche Gegenmaßnahmen. Essstörungen entstehen durch ein komplexes Zusammenspiel aus genetischen, psychologischen und gesellschaftlichen Faktoren. Unrealistische Schönheitsideale in sozialen Medien und Leistungsdruck spielen dabei eine wachsende Rolle, besonders bei Jugendlichen. Professionelle Hilfe durch Ärzte und Psychologen ist bei Essstörungen unbedingt notwendig. Frühzeitige Behandlung verbessert die Heilungschancen erheblich.",
+    questions: [
+      { q: "Was ist ein Merkmal der Magersucht?", options: ["Unkontrollierte Essanfälle", "Zu wenig essen trotz Untergewicht", "Hoher Zuckerkonsum", "Bewegungsmangel"], correct: 1 },
+      { q: "Was fördert laut Text die Entstehung von Essstörungen?", options: ["Zu viel Sport", "Unrealistische Schönheitsideale und Leistungsdruck", "Zu wenig Schlaf", "Schlechte Schulleistungen"], correct: 1 },
+      { q: "Was verbessert die Heilungschancen bei Essstörungen?", options: ["Mehr Sport treiben", "Diät halten", "Frühzeitige professionelle Behandlung", "Die Störung alleine bewältigen"], correct: 2 }
+    ],
+    vocab: [
+      { word: "Magersucht", meaning: "Eine Essstörung, bei der Betroffene zu wenig essen und ein verzerrtes Körperbild haben" },
+      { word: "Bulimie", meaning: "Eine Essstörung mit Essanfällen, auf die Erbrechen oder andere Gegenmaßnahmen folgen" },
+      { word: "Schönheitsideale", meaning: "Gesellschaftliche Vorstellungen davon, wie ein Körper aussehen sollte" }
+    ]
+  },
+
   {
     id: 18,
     title: "Klimawandel – was passiert mit unserer Erde?",
@@ -1560,13 +2285,14 @@ function showPage(pageId) {
   if (pageId === 'test') { renderTestTextList(); resetTest(); }
   if (pageId === 'training') { renderTrainingTextList(); showTrainingSetup(); }
   if (pageId === 'wortblitz') { showWbStart(); }
+  if (pageId === 'betonung') { showBtStart(); }
   if (pageId === 'stats') renderStats();
   if (pageId === 'vocab') renderVocabPage();
   if (pageId === 'home') updateHomeStreak();
 }
 
 function getNavLabel(pageId) {
-  const map = { home: 'Start', test: 'Lesetest', training: 'Training', wortblitz: 'Wort-Blitz', stats: 'Fortschritt', vocab: 'Start' };
+  const map = { home: 'Start', test: 'Lesetest', training: 'Training', wortblitz: 'Wort-Blitz', stats: 'Fortschritt', vocab: 'Start', betonung: 'Betonung' };
   return map[pageId] || '';
 }
 
@@ -1607,12 +2333,18 @@ function renderTextList(containerId, texts, onSelect) {
 }
 
 function renderTestTextList(filter) {
-  const texts = filter && filter !== 'all' ? TEXTS.filter(t => t.difficulty === filter) : TEXTS;
+  const { testIds, trainIds } = getReadTextIds();
+  let texts = TEXTS;
+  if (filter === 'new')       texts = TEXTS.filter(t => !testIds.has(t.id) && !trainIds.has(t.id));
+  else if (filter && filter !== 'all') texts = TEXTS.filter(t => t.difficulty === filter);
   renderTextList('test-text-list', texts, 'startTest');
 }
 
 function renderTrainingTextList(filter) {
-  const texts = filter && filter !== 'all' ? TEXTS.filter(t => t.difficulty === filter) : TEXTS;
+  const { testIds, trainIds } = getReadTextIds();
+  let texts = TEXTS;
+  if (filter === 'new')       texts = TEXTS.filter(t => !testIds.has(t.id) && !trainIds.has(t.id));
+  else if (filter && filter !== 'all') texts = TEXTS.filter(t => t.difficulty === filter);
   renderTextList('training-text-list', texts, 'startTraining');
 }
 
@@ -2351,6 +3083,225 @@ function showWbResults() {
       <div>
         <div style="font-weight:700">${r.word}</div>
         ${!r.correct ? `<div style="font-size:0.82rem;color:var(--secondary)">Du hast gewählt: ${r.selected}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// BETONUNGS-TRAINER
+// ============================================================
+// Jedes Wort: syllables = Array der Silben, stressed = Index der betonten Silbe (0-basiert)
+const BETONUNG_WORDS = [
+  // ── LEICHT ──
+  { word: "Apfel",       syllables: ["Ap","fel"],           stressed: 0, difficulty: "easy", meaning: "Eine runde, süß-säuerliche Frucht" },
+  { word: "Kinder",      syllables: ["Kin","der"],          stressed: 0, difficulty: "easy", meaning: "Mehrere Kinder" },
+  { word: "Blume",       syllables: ["Blu","me"],           stressed: 0, difficulty: "easy", meaning: "Eine Pflanze mit Blüten" },
+  { word: "Fenster",     syllables: ["Fens","ter"],         stressed: 0, difficulty: "easy", meaning: "Eine Glasöffnung in der Wand" },
+  { word: "Wasser",      syllables: ["Was","ser"],          stressed: 0, difficulty: "easy", meaning: "Klare, lebensnotwendige Flüssigkeit" },
+  { word: "Winter",      syllables: ["Win","ter"],          stressed: 0, difficulty: "easy", meaning: "Die kalte Jahreszeit" },
+  { word: "Sommer",      syllables: ["Som","mer"],          stressed: 0, difficulty: "easy", meaning: "Die warme Jahreszeit" },
+  { word: "Vogel",       syllables: ["Vo","gel"],           stressed: 0, difficulty: "easy", meaning: "Ein gefiedertes Tier mit Flügeln" },
+  { word: "Kuchen",      syllables: ["Ku","chen"],          stressed: 0, difficulty: "easy", meaning: "Gebackene süße Speise" },
+  { word: "Schultasche", syllables: ["Schul","ta","sche"],  stressed: 0, difficulty: "easy", meaning: "Tasche für Schulutensilien" },
+  { word: "Hunde",       syllables: ["Hun","de"],           stressed: 0, difficulty: "easy", meaning: "Mehrere Hunde" },
+  { word: "Turnen",      syllables: ["Tur","nen"],          stressed: 0, difficulty: "easy", meaning: "Eine Sportart mit Geräten" },
+  { word: "Laufen",      syllables: ["Lau","fen"],          stressed: 0, difficulty: "easy", meaning: "Sich schnell auf den Beinen fortbewegen" },
+  { word: "Frühstück",   syllables: ["Früh","stück"],       stressed: 0, difficulty: "easy", meaning: "Die erste Mahlzeit des Tages" },
+  { word: "Bäcker",      syllables: ["Bä","cker"],          stressed: 0, difficulty: "easy", meaning: "Jemand, der Brot und Kuchen backt" },
+
+  // ── MITTEL ──
+  { word: "Banane",      syllables: ["Ba","na","ne"],       stressed: 1, difficulty: "medium", meaning: "Eine gelbe, tropische Frucht" },
+  { word: "Tomate",      syllables: ["To","ma","te"],       stressed: 1, difficulty: "medium", meaning: "Eine rote Gemüsefrucht" },
+  { word: "Geschichte",  syllables: ["Ge","schich","te"],   stressed: 1, difficulty: "medium", meaning: "Vergangene Ereignisse oder eine Erzählung" },
+  { word: "Bewegung",    syllables: ["Be","we","gung"],     stressed: 1, difficulty: "medium", meaning: "Das Sich-Fortbewegen oder Sport treiben" },
+  { word: "Ernährung",   syllables: ["Er","näh","rung"],    stressed: 1, difficulty: "medium", meaning: "Was und wie wir essen" },
+  { word: "Gemüse",      syllables: ["Ge","mü","se"],       stressed: 1, difficulty: "medium", meaning: "Pflanzliche Lebensmittel wie Karotten und Brokkoli" },
+  { word: "Verstehen",   syllables: ["Ver","ste","hen"],    stressed: 1, difficulty: "medium", meaning: "Etwas begreifen oder nachvollziehen" },
+  { word: "Geräte",      syllables: ["Ge","rä","te"],       stressed: 1, difficulty: "medium", meaning: "Werkzeuge oder Turngeräte" },
+  { word: "Betonung",    syllables: ["Be","to","nung"],     stressed: 1, difficulty: "medium", meaning: "Das Hervorheben einer Silbe beim Sprechen" },
+  { word: "Elefant",     syllables: ["E","le","fant"],      stressed: 2, difficulty: "medium", meaning: "Das größte Landtier der Welt" },
+  { word: "Vitamine",    syllables: ["Vi","ta","mi","ne"],  stressed: 2, difficulty: "medium", meaning: "Lebensnotwendige Stoffe in Lebensmitteln" },
+  { word: "Mannschaft",  syllables: ["Mann","schaft"],      stressed: 0, difficulty: "medium", meaning: "Eine Gruppe von Spielern in einem Team" },
+  { word: "Schmetter­ling", syllables: ["Schmet","ter","ling"], stressed: 0, difficulty: "medium", meaning: "Ein buntes Insekt mit großen Flügeln" },
+  { word: "Regenbogen",  syllables: ["Re","gen","bo","gen"], stressed: 0, difficulty: "medium", meaning: "Farbiger Bogen am Himmel nach dem Regen" },
+  { word: "Gleichgewicht", syllables: ["Gleich","ge","wicht"], stressed: 0, difficulty: "medium", meaning: "Das stabile Balancieren des Körpers" },
+
+  // ── SCHWER ──
+  { word: "Universität",    syllables: ["U","ni","ver","si","tät"],    stressed: 4, difficulty: "hard", meaning: "Eine Hochschule für das Studium" },
+  { word: "Wissenschaft",   syllables: ["Wis","sen","schaft"],         stressed: 0, difficulty: "hard", meaning: "Systematische Erforschung der Welt" },
+  { word: "Geschwindigkeit",syllables: ["Ge","schwin","dig","keit"],   stressed: 1, difficulty: "hard", meaning: "Das Maß, wie schnell sich etwas bewegt" },
+  { word: "Verantwortung",  syllables: ["Ver","ant","wor","tung"],     stressed: 1, difficulty: "hard", meaning: "Die Pflicht, für etwas einzustehen" },
+  { word: "Ausbildung",     syllables: ["Aus","bil","dung"],           stressed: 0, difficulty: "hard", meaning: "Praktische Berufsausbildung" },
+  { word: "Entwicklung",    syllables: ["Ent","wick","lung"],          stressed: 1, difficulty: "hard", meaning: "Eine Veränderung oder Verbesserung" },
+  { word: "Beobachtung",    syllables: ["Be","ob","ach","tung"],       stressed: 1, difficulty: "hard", meaning: "Das genaue Betrachten und Wahrnehmen" },
+  { word: "Erfahrung",      syllables: ["Er","fah","rung"],            stressed: 1, difficulty: "hard", meaning: "Wissen, das man durch Erleben gewinnt" },
+  { word: "Gesellschaft",   syllables: ["Ge","sell","schaft"],         stressed: 1, difficulty: "hard", meaning: "Gemeinschaft von Menschen" },
+  { word: "Wahrnehmung",    syllables: ["Wahr","neh","mung"],          stressed: 0, difficulty: "hard", meaning: "Das Aufnehmen von Eindrücken durch die Sinne" },
+  { word: "Nachhaltigkeit", syllables: ["Nach","hal","tig","keit"],    stressed: 0, difficulty: "hard", meaning: "Handeln, das die Zukunft nicht belastet" },
+  { word: "Verdauungssystem",syllables: ["Ver","dau","ungs","sys","tem"], stressed: 4, difficulty: "hard", meaning: "Die Organe, die Nahrung verarbeiten" },
+  { word: "Biomechanik",    syllables: ["Bi","o","me","cha","nik"],    stressed: 4, difficulty: "hard", meaning: "Wissenschaft der Körperbewegungen" },
+  { word: "Ernährungspyramide", syllables: ["Er","näh","rungs","py","ra","mi","de"], stressed: 1, difficulty: "hard", meaning: "Modell für eine ausgewogene Ernährung" },
+  { word: "Leistungsdruck", syllables: ["Leis","tungs","druck"],       stressed: 0, difficulty: "hard", meaning: "Druck, immer bessere Ergebnisse zu erzielen" }
+];
+
+let bt = {
+  mode: 'learn',     // 'learn' | 'quiz'
+  words: [],
+  index: 0,
+  correct: 0,
+  wrong: 0,
+  answered: false,
+  review: []
+};
+
+function btSetMode(mode) {
+  bt.mode = mode;
+  document.getElementById('bt-tab-learn').classList.toggle('active', mode === 'learn');
+  document.getElementById('bt-tab-quiz').classList.toggle('active', mode === 'quiz');
+}
+
+function showBtStart() {
+  document.getElementById('bt-start').classList.remove('hidden');
+  document.getElementById('bt-playing').classList.add('hidden');
+  document.getElementById('bt-results').classList.add('hidden');
+
+  const hs = parseInt(localStorage.getItem('leseHeld_btHighscore') || '0');
+  if (hs > 0) {
+    document.getElementById('bt-highscore').textContent = hs;
+    document.getElementById('bt-highscore-box').classList.remove('hidden');
+  }
+}
+
+function startBetonung() {
+  const diff = document.getElementById('bt-difficulty').value;
+  let pool = diff === 'all' ? BETONUNG_WORDS : BETONUNG_WORDS.filter(w => w.difficulty === diff);
+  // Shuffle and take up to 10
+  pool = [...pool].sort(() => Math.random() - 0.5).slice(0, 10);
+
+  bt.words   = pool;
+  bt.index   = 0;
+  bt.correct = 0;
+  bt.wrong   = 0;
+  bt.review  = [];
+
+  document.getElementById('bt-start').classList.add('hidden');
+  document.getElementById('bt-playing').classList.remove('hidden');
+  document.getElementById('bt-results').classList.add('hidden');
+
+  btShowWord();
+}
+
+function btShowWord() {
+  const entry = bt.words[bt.index];
+  const total = bt.words.length;
+
+  document.getElementById('bt-progress-label').textContent = `Wort ${bt.index + 1} von ${total}`;
+  document.getElementById('bt-meaning-text').textContent = '';
+  document.getElementById('bt-feedback').textContent = '';
+
+  const area = document.getElementById('bt-word-area');
+  area.className = 'bt-word-display' + (bt.mode === 'quiz' ? ' bt-quiz-mode' : '');
+
+  bt.answered = false;
+
+  if (bt.mode === 'learn') {
+    // Show all syllables with stressed one highlighted
+    area.innerHTML = entry.syllables.map((syl, i) => {
+      const cls = i === entry.stressed ? 'bt-syllable bt-stressed' : 'bt-syllable';
+      return `<span class="${cls}">${syl}</span>`;
+    }).join('<span class="bt-syllable bt-dot">·</span>');
+
+    document.getElementById('bt-meaning-text').textContent = entry.meaning;
+    document.getElementById('bt-next-btn').textContent = bt.index < bt.words.length - 1 ? 'Weiter ➡️' : 'Fertig ✅';
+    document.getElementById('bt-actions').classList.remove('hidden');
+  } else {
+    // Quiz: syllables are clickable, no stress shown yet
+    area.innerHTML = entry.syllables.map((syl, i) => {
+      return `<span class="bt-syllable" data-idx="${i}" onclick="btAnswer(${i})">${syl}</span>`;
+    }).join('<span class="bt-syllable bt-dot">·</span>');
+
+    document.getElementById('bt-actions').classList.add('hidden');
+  }
+}
+
+function btAnswer(clickedIdx) {
+  if (bt.answered) return;
+  bt.answered = true;
+
+  const entry = bt.words[bt.index];
+  const correct = clickedIdx === entry.stressed;
+
+  // Update syllable classes
+  const area = document.getElementById('bt-word-area');
+  area.querySelectorAll('.bt-syllable:not(.bt-dot)').forEach(el => {
+    const idx = parseInt(el.dataset.idx);
+    if (idx === entry.stressed) el.classList.add('bt-quiz-correct');
+    else if (idx === clickedIdx && !correct) el.classList.add('bt-quiz-wrong');
+    el.onclick = null;
+  });
+
+  const fb = document.getElementById('bt-feedback');
+  if (correct) {
+    bt.correct++;
+    fb.textContent = '✅ Richtig!';
+    fb.style.color = '#1A8A4A';
+  } else {
+    bt.wrong++;
+    fb.textContent = `❌ Die betonte Silbe ist „${entry.syllables[entry.stressed]}"`;
+    fb.style.color = '#c0392b';
+  }
+
+  document.getElementById('bt-meaning-text').textContent = entry.meaning;
+  bt.review.push({ word: entry.word, correct, stressedSyl: entry.syllables[entry.stressed] });
+
+  document.getElementById('bt-next-btn').textContent = bt.index < bt.words.length - 1 ? 'Weiter ➡️' : 'Ergebnis 🏆';
+  document.getElementById('bt-actions').classList.remove('hidden');
+}
+
+function btNextWord() {
+  if (bt.mode === 'learn' || bt.answered) {
+    bt.index++;
+    if (bt.index >= bt.words.length) {
+      if (bt.mode === 'quiz') btShowResults();
+      else showBtStart();
+    } else {
+      btShowWord();
+    }
+  }
+}
+
+function btShowResults() {
+  document.getElementById('bt-playing').classList.add('hidden');
+  document.getElementById('bt-results').classList.remove('hidden');
+
+  const total = bt.words.length;
+  document.getElementById('bt-score-display').textContent = `${bt.correct}/${total}`;
+  document.getElementById('bt-correct-count').textContent = bt.correct;
+  document.getElementById('bt-wrong-count').textContent = bt.wrong;
+
+  const pct = bt.correct / total;
+  let msg = '', cls = '';
+  if (pct >= 0.9)      { msg = '🌟 Ausgezeichnet! Du kennst die Betonung perfekt!'; cls = 'great'; }
+  else if (pct >= 0.7) { msg = '👍 Sehr gut! Noch ein wenig Übung, dann klappt es perfekt!'; cls = 'good'; }
+  else if (pct >= 0.5) { msg = '💪 Weiter so! Die Betonung ist knifflig – bleib dran!'; cls = 'keep-going'; }
+  else                 { msg = '📖 Probiere zuerst den Lern-Modus, dann klappt es besser!'; cls = 'keep-going'; }
+
+  const msgEl = document.getElementById('bt-result-message');
+  msgEl.textContent = msg;
+  msgEl.className = 'result-message ' + cls;
+
+  const score = Math.round(pct * 100);
+  const prev = parseInt(localStorage.getItem('leseHeld_btHighscore') || '0');
+  if (score > prev) localStorage.setItem('leseHeld_btHighscore', score.toString());
+
+  const reviewEl = document.getElementById('bt-review');
+  reviewEl.innerHTML = '<h3 style="margin-bottom:10px">Übersicht:</h3>' + bt.review.map(r => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F0EFFF">
+      <span style="font-size:1.2rem">${r.correct ? '✅' : '❌'}</span>
+      <div>
+        <div style="font-weight:700">${r.word}</div>
+        ${!r.correct ? `<div style="font-size:0.82rem;color:var(--secondary)">Betonte Silbe: „${r.stressedSyl}"</div>` : ''}
       </div>
     </div>
   `).join('');
