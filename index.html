@@ -837,6 +837,7 @@
         <button onclick="filterTexts('easy', this)">&#x1F7E2; Leicht</button>
         <button onclick="filterTexts('medium', this)">&#x1F7E1; Mittel</button>
         <button onclick="filterTexts('hard', this)">&#x1F534; Knifflig</button>
+        <button onclick="filterTexts('new', this)">&#x2728; Neu</button>
       </div>
 
       <div class="text-list" id="test-text-list"></div>
@@ -918,6 +919,7 @@
         <button onclick="filterTrainingTexts('easy', this)">&#x1F7E2; Leicht</button>
         <button onclick="filterTrainingTexts('medium', this)">&#x1F7E1; Mittel</button>
         <button onclick="filterTrainingTexts('hard', this)">&#x1F534; Knifflig</button>
+        <button onclick="filterTrainingTexts('new', this)">&#x2728; Neu</button>
       </div>
       <div class="text-list" id="training-text-list"></div>
     </div>
@@ -2331,12 +2333,18 @@ function renderTextList(containerId, texts, onSelect) {
 }
 
 function renderTestTextList(filter) {
-  const texts = filter && filter !== 'all' ? TEXTS.filter(t => t.difficulty === filter) : TEXTS;
+  const { testIds, trainIds } = getReadTextIds();
+  let texts = TEXTS;
+  if (filter === 'new')       texts = TEXTS.filter(t => !testIds.has(t.id) && !trainIds.has(t.id));
+  else if (filter && filter !== 'all') texts = TEXTS.filter(t => t.difficulty === filter);
   renderTextList('test-text-list', texts, 'startTest');
 }
 
 function renderTrainingTextList(filter) {
-  const texts = filter && filter !== 'all' ? TEXTS.filter(t => t.difficulty === filter) : TEXTS;
+  const { testIds, trainIds } = getReadTextIds();
+  let texts = TEXTS;
+  if (filter === 'new')       texts = TEXTS.filter(t => !testIds.has(t.id) && !trainIds.has(t.id));
+  else if (filter && filter !== 'all') texts = TEXTS.filter(t => t.difficulty === filter);
   renderTextList('training-text-list', texts, 'startTraining');
 }
 
