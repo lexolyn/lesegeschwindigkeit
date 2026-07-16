@@ -749,6 +749,68 @@
   .bt-filter { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
   .bt-filter label { font-weight: 700; font-size: 0.9rem; }
 
+  /* Konzentrations-Trainer */
+  .konz-progress { text-align: center; font-size: 0.9rem; color: var(--text-light); font-weight: 700; margin-bottom: 8px; }
+  .konz-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+    margin: 16px 0;
+  }
+  .konz-cell {
+    aspect-ratio: 1;
+    border: 2px solid #E8E7F5;
+    border-radius: 10px;
+    background: #FAFAFF;
+    font-family: inherit;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .konz-cell:hover { border-color: var(--primary); background: #F0EFFF; }
+  .konz-cell.konz-found { background: #D4F7E3; border-color: #43E97B; color: #1A8A4A; cursor: default; }
+  .konz-cell.konz-wrong { background: #FFE5EA; border-color: var(--secondary); color: #c0392b; }
+  .konz-spiel-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+  .konz-target-hint { font-size: 1.1rem; font-weight: 700; text-align: center; margin-bottom: 6px; }
+  .konz-target-hint .konz-target-letter { color: var(--primary); font-size: 1.6rem; }
+
+  .konz-breath-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 10px;
+    min-height: 280px;
+  }
+  .konz-breath-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--primary-light), var(--primary));
+    box-shadow: 0 8px 32px rgba(108,99,255,0.35);
+    transform: scale(1);
+  }
+  .konz-breath-label {
+    margin-top: 24px;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--primary);
+    text-align: center;
+    min-height: 32px;
+  }
+  .konz-breath-round { font-size: 0.9rem; color: var(--text-light); font-weight: 700; margin-top: 6px; }
+
+  .konz-timer-display { margin: 20px 0; }
+  .konz-phase-label {
+    text-align: center;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 4px;
+  }
+
   /* Responsive */
   @media (max-width: 500px) {
     .header h1 { font-size: 1.8rem; }
@@ -758,6 +820,8 @@
     .result-big .wpm { font-size: 3rem; }
     .wortblitz-word { font-size: 1.7rem; padding: 28px 12px; }
     .wortblitz-options { grid-template-columns: 1fr 1fr; }
+    .konz-grid { grid-template-columns: repeat(6, 1fr); }
+    .konz-cell { font-size: 1.1rem; }
   }
 </style>
 </head>
@@ -776,6 +840,7 @@
     <button onclick="showPage('wortblitz')">&#x26A1; Wort-Blitz</button>
     <button onclick="showPage('stats')">&#x1F4CA; Fortschritt</button>
     <button onclick="showPage('betonung')">&#x1F3A4; Betonung</button>
+    <button onclick="showPage('konzentration')">&#x1F9D8; Konzentration</button>
   </nav>
 
   <!-- HOME PAGE -->
@@ -814,6 +879,11 @@
           <div class="icon">&#x1F3A4;</div>
           <h3>Betonung</h3>
           <p>Lerne, W&ouml;rter richtig zu betonen!</p>
+        </div>
+        <div class="home-card" onclick="showPage('konzentration')">
+          <div class="icon">&#x1F9D8;</div>
+          <h3>Konzentration</h3>
+          <p>Werde ruhig und fokussiert zum Lesen!</p>
         </div>
       </div>
     </div>
@@ -1081,6 +1151,177 @@
       <div class="actions">
         <button class="btn btn-primary" onclick="startBetonung()">&#x1F3A4; Nochmal!</button>
         <button class="btn btn-outline btn-sm" onclick="showBtStart()">Einstellungen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KONZENTRATIONS-TRAINER PAGE -->
+  <div id="page-konzentration" class="page">
+    <div class="card">
+      <h2>&#x1F9D8; Konzentration</h2>
+      <p>Werde ruhig und fokussiert, bevor du liest. W&auml;hle eine &Uuml;bung:</p>
+      <div class="bt-mode-tabs">
+        <button class="bt-tab active" id="konz-tab-spiel" onclick="konzSetTab('spiel')">&#x1F50E; Fokus-Spiel</button>
+        <button class="bt-tab" id="konz-tab-timer" onclick="konzSetTab('timer')">&#x23F1;&#xFE0F; Fokus-Timer</button>
+        <button class="bt-tab" id="konz-tab-ruhe" onclick="konzSetTab('ruhe')">&#x1F32C;&#xFE0F; Ruhe&uuml;bung</button>
+      </div>
+    </div>
+
+    <!-- FOKUS-SPIEL: Buchstaben-Suchspiel -->
+    <div id="konz-spiel" class="konz-tabsection">
+      <div id="konz-spiel-start" class="card">
+        <h3>&#x1F50E; Finde den Zielbuchstaben!</h3>
+        <p>Im Buchstaben-Gitter versteckt sich immer wieder ein bestimmter Buchstabe zwischen &auml;hnlich aussehenden Buchstaben. Finde alle, so schnell du kannst &ndash; das trainiert genaues Hinsehen und Konzentration!</p>
+        <div class="bt-filter">
+          <label>Schwierigkeit:</label>
+          <select id="konz-spiel-difficulty" style="padding:8px 14px;border-radius:10px;border:2px solid #E8E7F5;font-family:inherit;font-weight:700;font-size:0.95rem;cursor:pointer">
+            <option value="easy">Leicht (b / h)</option>
+            <option value="medium" selected>Mittel (b / d)</option>
+            <option value="hard">Schwer (b / d / p / q)</option>
+          </select>
+        </div>
+        <div class="bt-filter">
+          <label>Zeitlimit:</label>
+          <select id="konz-spiel-duration" style="padding:8px 14px;border-radius:10px;border:2px solid #E8E7F5;font-family:inherit;font-weight:700;font-size:0.95rem;cursor:pointer">
+            <option value="30">30 Sekunden</option>
+            <option value="45" selected>45 Sekunden</option>
+            <option value="60">60 Sekunden</option>
+            <option value="90">90 Sekunden</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="startKonzSpiel()">&#x1F50E; Los geht&rsquo;s!</button>
+        </div>
+        <div id="konz-spiel-bestzeit-box" class="info-box hidden">
+          &#x1F3C6; Beste Zeit (alle gefunden): <strong><span id="konz-spiel-bestzeit">0</span> Sekunden</strong>
+        </div>
+      </div>
+
+      <div id="konz-spiel-playing" class="card hidden">
+        <div class="konz-spiel-meta">
+          <span id="konz-spiel-progress" class="konz-progress" style="margin:0">0 / 0 gefunden</span>
+          <span id="konz-spiel-time" class="konz-progress" style="margin:0">45s</span>
+        </div>
+        <div class="konz-target-hint">Suche: <span class="konz-target-letter" id="konz-target-letter">b</span></div>
+        <div id="konz-grid" class="konz-grid"></div>
+        <div class="actions">
+          <button class="btn btn-outline btn-sm" onclick="showKonzSpielStart()">Abbrechen</button>
+        </div>
+      </div>
+
+      <div id="konz-spiel-results" class="card hidden">
+        <h2>&#x1F389; Ergebnis</h2>
+        <div class="bt-score-big" id="konz-spiel-score-display">0/0</div>
+        <div id="konz-spiel-result-message" class="result-message" style="margin:12px 0"></div>
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="stat-num" id="konz-spiel-mistakes">0</div>
+            <div class="stat-label">Fehler</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="konz-spiel-zeit">0s</div>
+            <div class="stat-label">Ben&ouml;tigte Zeit</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="startKonzSpiel()">&#x1F50E; Nochmal!</button>
+          <button class="btn btn-outline btn-sm" onclick="showKonzSpielStart()">Einstellungen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOKUS-TIMER: Pomodoro-Style -->
+    <div id="konz-timer" class="konz-tabsection hidden">
+      <div id="konz-timer-setup" class="card">
+        <h3>&#x23F1;&#xFE0F; Konzentriert lesen mit dem Fokus-Timer</h3>
+        <p>Stelle einen Fokus-Zeitraum ein. W&auml;hrenddessen liest oder &uuml;bst du ganz ohne Ablenkung. Danach gibt es eine kurze Pause.</p>
+        <div class="bt-filter">
+          <label>Fokus-Zeit:</label>
+          <select id="konz-timer-focus" style="padding:8px 14px;border-radius:10px;border:2px solid #E8E7F5;font-family:inherit;font-weight:700;font-size:0.95rem;cursor:pointer">
+            <option value="5">5 Minuten</option>
+            <option value="10" selected>10 Minuten</option>
+            <option value="15">15 Minuten</option>
+            <option value="20">20 Minuten</option>
+          </select>
+        </div>
+        <div class="bt-filter">
+          <label>Pause danach:</label>
+          <select id="konz-timer-break" style="padding:8px 14px;border-radius:10px;border:2px solid #E8E7F5;font-family:inherit;font-weight:700;font-size:0.95rem;cursor:pointer">
+            <option value="0">Keine Pause</option>
+            <option value="1">1 Minute</option>
+            <option value="3" selected>3 Minuten</option>
+            <option value="5">5 Minuten</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="startKonzTimer()">&#x23F1;&#xFE0F; Fokus starten</button>
+        </div>
+        <div id="konz-timer-sessions-box" class="info-box hidden">
+          &#x1F3C6; Abgeschlossene Fokus-Einheiten: <strong><span id="konz-timer-sessions">0</span></strong>
+        </div>
+      </div>
+
+      <div id="konz-timer-running" class="card hidden">
+        <div class="konz-phase-label" id="konz-timer-phase-label">Fokus-Zeit</div>
+        <div class="konz-timer-display">
+          <div class="timer" id="konz-timer-display">10:00</div>
+          <div class="progress-bar"><div class="fill" id="konz-timer-fill" style="width:100%"></div></div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-outline" id="konz-timer-pause-btn" onclick="toggleKonzTimerPause()">&#x23F8;&#xFE0F; Pause</button>
+          <button class="btn btn-outline btn-sm" onclick="stopKonzTimer()">Abbrechen</button>
+        </div>
+      </div>
+
+      <div id="konz-timer-done" class="card hidden">
+        <h2>&#x1F389; Gut gemacht!</h2>
+        <div id="konz-timer-done-message" class="result-message great" style="margin:12px 0"></div>
+        <div class="info-box">
+          &#x1F3C6; Abgeschlossene Fokus-Einheiten: <strong><span id="konz-timer-done-sessions">0</span></strong>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="showKonzTimerSetup()">&#x23F1;&#xFE0F; Neue Runde</button>
+          <button class="btn btn-secondary" onclick="showPage('test')">&#x23F1;&#xFE0F; Jetzt lesen!</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RUHEÜBUNG: Atemübung -->
+    <div id="konz-ruhe" class="konz-tabsection hidden">
+      <div id="konz-ruhe-start" class="card">
+        <h3>&#x1F32C;&#xFE0F; Ruhe&uuml;bung zum Ankommen</h3>
+        <p>Atme ruhig ein und aus, im Rhythmus des Kreises. Das beruhigt und hilft dir, dich danach besser zu konzentrieren.</p>
+        <div class="bt-filter">
+          <label>Runden:</label>
+          <select id="konz-ruhe-rounds" style="padding:8px 14px;border-radius:10px;border:2px solid #E8E7F5;font-family:inherit;font-weight:700;font-size:0.95rem;cursor:pointer">
+            <option value="3">3 Runden</option>
+            <option value="5" selected>5 Runden</option>
+            <option value="8">8 Runden</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="startKonzRuhe()">&#x1F32C;&#xFE0F; Los geht&rsquo;s!</button>
+        </div>
+      </div>
+
+      <div id="konz-ruhe-playing" class="card hidden">
+        <div class="konz-breath-wrap">
+          <div class="konz-breath-circle" id="konz-breath-circle"></div>
+          <div class="konz-breath-label" id="konz-breath-label">Bereit machen...</div>
+          <div class="konz-breath-round" id="konz-breath-round"></div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-outline btn-sm" onclick="cancelKonzRuhe()">Abbrechen</button>
+        </div>
+      </div>
+
+      <div id="konz-ruhe-done" class="card hidden">
+        <h2>&#x1F60C; Sch&ouml;n ruhig!</h2>
+        <p style="text-align:center">Du bist jetzt entspannt und bereit, dich zu konzentrieren.</p>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="showKonzRuheStart()">&#x1F32C;&#xFE0F; Nochmal</button>
+          <button class="btn btn-secondary" onclick="showPage('test')">&#x23F1;&#xFE0F; Jetzt lesen!</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2449,13 +2690,15 @@ function showPage(pageId) {
   if (pageId === 'training') { renderTrainingTextList(); showTrainingSetup(); }
   if (pageId === 'wortblitz') { showWbStart(); }
   if (pageId === 'betonung') { showBtStart(); }
+  if (pageId === 'konzentration') { showKonzStart(); }
+  else { stopAllKonzTimers(); }
   if (pageId === 'stats') renderStats();
   if (pageId === 'vocab') renderVocabPage();
   if (pageId === 'home') updateHomeStreak();
 }
 
 function getNavLabel(pageId) {
-  const map = { home: 'Start', test: 'Lesetest', training: 'Training', wortblitz: 'Wort-Blitz', stats: 'Fortschritt', vocab: 'Start', betonung: 'Betonung' };
+  const map = { home: 'Start', test: 'Lesetest', training: 'Training', wortblitz: 'Wort-Blitz', stats: 'Fortschritt', vocab: 'Start', betonung: 'Betonung', konzentration: 'Konzentration' };
   return map[pageId] || '';
 }
 
@@ -3468,6 +3711,324 @@ function btShowResults() {
       </div>
     </div>
   `).join('');
+}
+
+// ============================================================
+// KONZENTRATIONS-TRAINER
+// ============================================================
+function showKonzStart() {
+  konzSetTab('spiel');
+  showKonzSpielStart();
+  showKonzTimerSetup();
+  showKonzRuheStart();
+}
+
+function konzSetTab(tab) {
+  document.getElementById('konz-tab-spiel').classList.toggle('active', tab === 'spiel');
+  document.getElementById('konz-tab-timer').classList.toggle('active', tab === 'timer');
+  document.getElementById('konz-tab-ruhe').classList.toggle('active', tab === 'ruhe');
+  document.getElementById('konz-spiel').classList.toggle('hidden', tab !== 'spiel');
+  document.getElementById('konz-timer').classList.toggle('hidden', tab !== 'timer');
+  document.getElementById('konz-ruhe').classList.toggle('hidden', tab !== 'ruhe');
+}
+
+function stopAllKonzTimers() {
+  clearInterval(konzSpiel.tickInterval);
+  clearInterval(konzTimer.tickInterval);
+  clearTimeout(konzRuhe.phaseTimeout);
+}
+
+// ---- Fokus-Spiel (Buchstaben-Suchspiel) ----
+const KONZ_LETTER_SETS = {
+  easy:   { target: 'b', distractors: ['h'] },
+  medium: { target: 'b', distractors: ['d'] },
+  hard:   { target: 'b', distractors: ['d', 'p', 'q'] }
+};
+const KONZ_GRID_SIZE = 56; // 8 x 7
+
+let konzSpiel = {
+  difficulty: 'medium',
+  duration: 45,
+  timeLeft: 0,
+  grid: [],
+  targetLetter: '',
+  totalTargets: 0,
+  foundCount: 0,
+  mistakes: 0,
+  startTime: null,
+  tickInterval: null
+};
+
+function showKonzSpielStart() {
+  clearInterval(konzSpiel.tickInterval);
+  document.getElementById('konz-spiel-start').classList.remove('hidden');
+  document.getElementById('konz-spiel-playing').classList.add('hidden');
+  document.getElementById('konz-spiel-results').classList.add('hidden');
+
+  const best = localStorage.getItem('leseHeld_konzSpielBestzeit');
+  if (best) {
+    document.getElementById('konz-spiel-bestzeit').textContent = best;
+    document.getElementById('konz-spiel-bestzeit-box').classList.remove('hidden');
+  }
+}
+
+function konzBuildGrid(difficulty) {
+  const set = KONZ_LETTER_SETS[difficulty];
+  const targetCount = { easy: 10, medium: 14, hard: 18 }[difficulty];
+  const cells = [];
+  for (let i = 0; i < KONZ_GRID_SIZE; i++) {
+    const distractor = set.distractors[Math.floor(Math.random() * set.distractors.length)];
+    cells.push({ letter: distractor, isTarget: false, found: false });
+  }
+  // Zufällige Positionen für den Zielbuchstaben auswählen
+  const positions = [...Array(KONZ_GRID_SIZE).keys()];
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+  positions.slice(0, targetCount).forEach(pos => {
+    cells[pos] = { letter: set.target, isTarget: true, found: false };
+  });
+  return cells;
+}
+
+function renderKonzGrid() {
+  const container = document.getElementById('konz-grid');
+  container.innerHTML = konzSpiel.grid.map((cell, i) => `
+    <button class="konz-cell" id="konz-cell-${i}" onclick="konzClickLetter(${i})">${cell.letter}</button>
+  `).join('');
+}
+
+function startKonzSpiel() {
+  konzSpiel.difficulty = document.getElementById('konz-spiel-difficulty').value;
+  konzSpiel.duration = parseInt(document.getElementById('konz-spiel-duration').value);
+  konzSpiel.timeLeft = konzSpiel.duration;
+  konzSpiel.grid = konzBuildGrid(konzSpiel.difficulty);
+  konzSpiel.targetLetter = KONZ_LETTER_SETS[konzSpiel.difficulty].target;
+  konzSpiel.totalTargets = konzSpiel.grid.filter(c => c.isTarget).length;
+  konzSpiel.foundCount = 0;
+  konzSpiel.mistakes = 0;
+  konzSpiel.startTime = Date.now();
+
+  document.getElementById('konz-target-letter').textContent = konzSpiel.targetLetter;
+  document.getElementById('konz-spiel-progress').textContent = `0 / ${konzSpiel.totalTargets} gefunden`;
+  document.getElementById('konz-spiel-time').textContent = `${konzSpiel.timeLeft}s`;
+  renderKonzGrid();
+
+  document.getElementById('konz-spiel-start').classList.add('hidden');
+  document.getElementById('konz-spiel-playing').classList.remove('hidden');
+  document.getElementById('konz-spiel-results').classList.add('hidden');
+
+  clearInterval(konzSpiel.tickInterval);
+  konzSpiel.tickInterval = setInterval(konzSpielTick, 1000);
+}
+
+function konzSpielTick() {
+  konzSpiel.timeLeft--;
+  document.getElementById('konz-spiel-time').textContent = `${konzSpiel.timeLeft}s`;
+  if (konzSpiel.timeLeft <= 0) {
+    finishKonzSpiel(false);
+  }
+}
+
+function konzClickLetter(index) {
+  const cell = konzSpiel.grid[index];
+  if (cell.found) return;
+  const btn = document.getElementById(`konz-cell-${index}`);
+
+  if (cell.isTarget) {
+    cell.found = true;
+    konzSpiel.foundCount++;
+    btn.classList.add('konz-found');
+    document.getElementById('konz-spiel-progress').textContent = `${konzSpiel.foundCount} / ${konzSpiel.totalTargets} gefunden`;
+    if (konzSpiel.foundCount === konzSpiel.totalTargets) {
+      finishKonzSpiel(true);
+    }
+  } else {
+    konzSpiel.mistakes++;
+    btn.classList.add('konz-wrong');
+    setTimeout(() => btn.classList.remove('konz-wrong'), 400);
+  }
+}
+
+function finishKonzSpiel(completedAll) {
+  clearInterval(konzSpiel.tickInterval);
+  document.getElementById('konz-spiel-playing').classList.add('hidden');
+  document.getElementById('konz-spiel-results').classList.remove('hidden');
+
+  const elapsedSeconds = Math.round((Date.now() - konzSpiel.startTime) / 1000);
+  document.getElementById('konz-spiel-score-display').textContent = `${konzSpiel.foundCount}/${konzSpiel.totalTargets}`;
+  document.getElementById('konz-spiel-mistakes').textContent = konzSpiel.mistakes;
+  document.getElementById('konz-spiel-zeit').textContent = completedAll ? `${elapsedSeconds}s` : `${konzSpiel.duration}s (Zeit abgelaufen)`;
+
+  const msgEl = document.getElementById('konz-spiel-result-message');
+  if (completedAll) {
+    msgEl.textContent = konzSpiel.mistakes === 0
+      ? '🌟 Perfekt! Alle gefunden, ganz ohne Fehler!'
+      : '👍 Super, alle gefunden! Konzentriere dich beim nächsten Mal auf noch weniger Fehler.';
+    msgEl.className = 'result-message great';
+
+    const prevBest = parseInt(localStorage.getItem('leseHeld_konzSpielBestzeit') || '0');
+    if (!prevBest || elapsedSeconds < prevBest) {
+      localStorage.setItem('leseHeld_konzSpielBestzeit', elapsedSeconds.toString());
+    }
+  } else {
+    msgEl.textContent = '⏱️ Die Zeit ist um! Versuch es nochmal, um alle zu finden.';
+    msgEl.className = 'result-message keep-going';
+  }
+}
+
+// ---- Fokus-Timer (Pomodoro-Style) ----
+let konzTimer = {
+  phase: 'focus', // 'focus' | 'break'
+  remainingSeconds: 0,
+  totalSeconds: 0,
+  breakSeconds: 0,
+  paused: false,
+  tickInterval: null
+};
+
+function showKonzTimerSetup() {
+  clearInterval(konzTimer.tickInterval);
+  document.getElementById('konz-timer-setup').classList.remove('hidden');
+  document.getElementById('konz-timer-running').classList.add('hidden');
+  document.getElementById('konz-timer-done').classList.add('hidden');
+
+  const sessions = parseInt(localStorage.getItem('leseHeld_focusSessions') || '0');
+  if (sessions > 0) {
+    document.getElementById('konz-timer-sessions').textContent = sessions;
+    document.getElementById('konz-timer-sessions-box').classList.remove('hidden');
+  }
+}
+
+function startKonzTimer() {
+  const focusMin = parseInt(document.getElementById('konz-timer-focus').value);
+  konzTimer.breakSeconds = parseInt(document.getElementById('konz-timer-break').value) * 60;
+  konzTimer.phase = 'focus';
+  konzTimer.totalSeconds = focusMin * 60;
+  konzTimer.remainingSeconds = konzTimer.totalSeconds;
+  konzTimer.paused = false;
+
+  document.getElementById('konz-timer-setup').classList.add('hidden');
+  document.getElementById('konz-timer-running').classList.remove('hidden');
+  document.getElementById('konz-timer-done').classList.add('hidden');
+  document.getElementById('konz-timer-pause-btn').textContent = '⏸️ Pause';
+
+  konzUpdateTimerDisplay();
+  clearInterval(konzTimer.tickInterval);
+  konzTimer.tickInterval = setInterval(konzTimerTick, 1000);
+}
+
+function konzTimerTick() {
+  if (konzTimer.paused) return;
+  konzTimer.remainingSeconds--;
+  konzUpdateTimerDisplay();
+  if (konzTimer.remainingSeconds <= 0) {
+    if (konzTimer.phase === 'focus' && konzTimer.breakSeconds > 0) {
+      konzTimer.phase = 'break';
+      konzTimer.totalSeconds = konzTimer.breakSeconds;
+      konzTimer.remainingSeconds = konzTimer.breakSeconds;
+    } else {
+      finishKonzTimer();
+    }
+  }
+}
+
+function konzUpdateTimerDisplay() {
+  const min = Math.floor(konzTimer.remainingSeconds / 60);
+  const sec = konzTimer.remainingSeconds % 60;
+  document.getElementById('konz-timer-display').textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+  document.getElementById('konz-timer-phase-label').textContent = konzTimer.phase === 'focus' ? '🎯 Fokus-Zeit' : '☕ Pause';
+  const pct = Math.max(0, (konzTimer.remainingSeconds / konzTimer.totalSeconds) * 100);
+  document.getElementById('konz-timer-fill').style.width = pct + '%';
+}
+
+function toggleKonzTimerPause() {
+  konzTimer.paused = !konzTimer.paused;
+  document.getElementById('konz-timer-pause-btn').textContent = konzTimer.paused ? '▶️ Weiter' : '⏸️ Pause';
+}
+
+function stopKonzTimer() {
+  clearInterval(konzTimer.tickInterval);
+  showKonzTimerSetup();
+}
+
+function finishKonzTimer() {
+  clearInterval(konzTimer.tickInterval);
+  const sessions = parseInt(localStorage.getItem('leseHeld_focusSessions') || '0') + 1;
+  localStorage.setItem('leseHeld_focusSessions', sessions.toString());
+
+  document.getElementById('konz-timer-running').classList.add('hidden');
+  document.getElementById('konz-timer-done').classList.remove('hidden');
+  document.getElementById('konz-timer-done-message').textContent = '🎯 Fokus-Zeit geschafft! Du warst konzentriert dabei.';
+  document.getElementById('konz-timer-done-sessions').textContent = sessions;
+}
+
+// ---- Ruheübung (Atemübung) ----
+let konzRuhe = {
+  rounds: 5,
+  currentRound: 0,
+  cancelled: false,
+  phaseTimeout: null
+};
+
+function showKonzRuheStart() {
+  clearTimeout(konzRuhe.phaseTimeout);
+  document.getElementById('konz-ruhe-start').classList.remove('hidden');
+  document.getElementById('konz-ruhe-playing').classList.add('hidden');
+  document.getElementById('konz-ruhe-done').classList.add('hidden');
+}
+
+function startKonzRuhe() {
+  konzRuhe.rounds = parseInt(document.getElementById('konz-ruhe-rounds').value);
+  konzRuhe.currentRound = 0;
+  konzRuhe.cancelled = false;
+
+  document.getElementById('konz-breath-circle').style.transition = 'none';
+  document.getElementById('konz-breath-circle').style.transform = 'scale(1)';
+
+  document.getElementById('konz-ruhe-start').classList.add('hidden');
+  document.getElementById('konz-ruhe-playing').classList.remove('hidden');
+  document.getElementById('konz-ruhe-done').classList.add('hidden');
+
+  konzRuhePhase('in');
+}
+
+function konzRuhePhase(phase) {
+  if (konzRuhe.cancelled) return;
+  const circle = document.getElementById('konz-breath-circle');
+  const label = document.getElementById('konz-breath-label');
+
+  if (phase === 'in') {
+    konzRuhe.currentRound++;
+    document.getElementById('konz-breath-round').textContent = `Runde ${konzRuhe.currentRound} von ${konzRuhe.rounds}`;
+    label.textContent = '🌬️ Einatmen ...';
+    circle.style.transition = 'transform 4s ease-in-out';
+    circle.style.transform = 'scale(1.4)';
+    konzRuhe.phaseTimeout = setTimeout(() => konzRuhePhase('hold'), 4000);
+  } else if (phase === 'hold') {
+    label.textContent = '✋ Halten ...';
+    konzRuhe.phaseTimeout = setTimeout(() => konzRuhePhase('out'), 2000);
+  } else if (phase === 'out') {
+    label.textContent = '😌 Ausatmen ...';
+    circle.style.transition = 'transform 5s ease-in-out';
+    circle.style.transform = 'scale(1)';
+    konzRuhe.phaseTimeout = setTimeout(() => {
+      if (konzRuhe.currentRound >= konzRuhe.rounds) finishKonzRuhe();
+      else konzRuhePhase('in');
+    }, 5000);
+  }
+}
+
+function finishKonzRuhe() {
+  document.getElementById('konz-ruhe-playing').classList.add('hidden');
+  document.getElementById('konz-ruhe-done').classList.remove('hidden');
+}
+
+function cancelKonzRuhe() {
+  konzRuhe.cancelled = true;
+  clearTimeout(konzRuhe.phaseTimeout);
+  showKonzRuheStart();
 }
 
 // ============================================================
