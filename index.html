@@ -749,6 +749,33 @@
   .bt-filter { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
   .bt-filter label { font-weight: 700; font-size: 0.9rem; }
 
+  /* RSVP Ein-Wort-Modus */
+  .rsvp-word-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+    padding: 24px;
+    background: #FAFAFF;
+    border-radius: 16px;
+    margin: 16px 0;
+    border: 2px solid #E8E7F5;
+  }
+  .rsvp-fixation {
+    width: 2px;
+    height: 14px;
+    background: var(--secondary);
+    margin-bottom: 10px;
+  }
+  .rsvp-word {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+  .rsvp-pivot { color: var(--secondary); }
+
   /* Konzentrations-Trainer */
   .konz-progress { text-align: center; font-size: 0.9rem; color: var(--text-light); font-weight: 700; margin-bottom: 8px; }
   .konz-grid {
@@ -822,6 +849,7 @@
     .wortblitz-options { grid-template-columns: 1fr 1fr; }
     .konz-grid { grid-template-columns: repeat(6, 1fr); }
     .konz-cell { font-size: 1.1rem; }
+    .rsvp-word { font-size: 1.8rem; }
   }
 </style>
 </head>
@@ -971,7 +999,11 @@
     <!-- Training setup -->
     <div id="training-setup" class="card">
       <h2>&#x1F3AF; Lese-Training</h2>
-      <p>Die W&ouml;rter leuchten nacheinander auf. Versuche mitzulesen! Du kannst die Geschwindigkeit einstellen.</p>
+      <div class="bt-mode-tabs">
+        <button class="bt-tab active" id="train-tab-highlight" onclick="setTrainingMode('highlight')">&#x1F4D6; Text mit Hervorhebung</button>
+        <button class="bt-tab" id="train-tab-rsvp" onclick="setTrainingMode('rsvp')">&#x1F524; Ein-Wort-Modus</button>
+      </div>
+      <p id="training-mode-desc">Die W&ouml;rter leuchten nacheinander im Text auf. Versuche mitzulesen! Du kannst die Geschwindigkeit einstellen.</p>
 
       <div class="speed-control">
         <label>&#x26A1; Tempo:</label>
@@ -1004,6 +1036,10 @@
         <div class="fill" id="training-progress" style="width:0%"></div>
       </div>
       <div class="reading-text" id="training-text-content" style="font-size:1.5rem"></div>
+      <div class="rsvp-word-display hidden" id="training-rsvp-display">
+        <div class="rsvp-fixation"></div>
+        <div class="rsvp-word" id="rsvp-word-text"></div>
+      </div>
 
       <div class="speed-control">
         <label>Tempo:</label>
@@ -2662,6 +2698,8 @@ let state = {
   currentTrainingText: null,
   trainingInterval: null,
   trainingWordIndex: 0,
+  trainingWords: [],
+  trainingMode: 'highlight', // 'highlight' | 'rsvp'
   trainingPaused: false,
   trainingStartTime: null,
   trainingTotalPauseMs: 0,
@@ -2927,6 +2965,15 @@ function updateSpeedDisplay() {
   document.getElementById('speed-display').textContent = val + ' WPM';
 }
 
+function setTrainingMode(mode) {
+  state.trainingMode = mode;
+  document.getElementById('train-tab-highlight').classList.toggle('active', mode === 'highlight');
+  document.getElementById('train-tab-rsvp').classList.toggle('active', mode === 'rsvp');
+  document.getElementById('training-mode-desc').textContent = mode === 'rsvp'
+    ? 'Immer nur ein Wort erscheint an der gleichen Stelle – deine Augen müssen nicht springen. Ideal für sehr schnelles Lesen!'
+    : 'Die Wörter leuchten nacheinander im Text auf. Versuche mitzulesen! Du kannst die Geschwindigkeit einstellen.';
+}
+
 function startTraining(textId) {
   const text = TEXTS.find(t => t.id === textId);
   if (!text) return;
@@ -2939,7 +2986,7 @@ function startTraining(textId) {
 
   const speed = parseInt(document.getElementById('speed-slider').value);
 
-  document.getElementById('training-title').textContent = text.icon + ' ' + text.title;
+  document.getElementById('training-title').innerHTML = text.icon + ' ' + text.title;
   document.getElementById('training-speed-label').textContent = speed + ' WPM';
   document.getElementById('training-speed-slider').value = speed;
   document.getElementById('training-speed-display').textContent = speed + ' WPM';
@@ -2947,15 +2994,24 @@ function startTraining(textId) {
 
   // Prepare words
   const words = text.text.split(/\s+/);
-  const vocabWords = text.vocab.map(v => v.word.toLowerCase());
+  state.trainingWords = words;
 
-  document.getElementById('training-text-content').innerHTML = words.map((w, i) => {
-    const clean = w.replace(/[.,!?;:]/g, '').toLowerCase();
-    const isVocab = vocabWords.includes(clean);
-    const vocabItem = isVocab ? text.vocab.find(v => v.word.toLowerCase() === clean) : null;
-    const vocabAttr = vocabItem ? ` class="word vocab-word" data-meaning="${vocabItem.meaning}"` : ' class="word"';
-    return `<span${vocabAttr} id="tw-${i}">${w}</span>`;
-  }).join(' ');
+  const isRsvp = state.trainingMode === 'rsvp';
+  document.getElementById('training-text-content').classList.toggle('hidden', isRsvp);
+  document.getElementById('training-rsvp-display').classList.toggle('hidden', !isRsvp);
+
+  if (isRsvp) {
+    renderRsvpWord('');
+  } else {
+    const vocabWords = text.vocab.map(v => v.word.toLowerCase());
+    document.getElementById('training-text-content').innerHTML = words.map((w, i) => {
+      const clean = w.replace(/[.,!?;:]/g, '').toLowerCase();
+      const isVocab = vocabWords.includes(clean);
+      const vocabItem = isVocab ? text.vocab.find(v => v.word.toLowerCase() === clean) : null;
+      const vocabAttr = vocabItem ? ` class="word vocab-word" data-meaning="${vocabItem.meaning}"` : ' class="word"';
+      return `<span${vocabAttr} id="tw-${i}">${w}</span>`;
+    }).join(' ');
+  }
 
   document.getElementById('training-setup').classList.add('hidden');
   document.getElementById('training-active').classList.remove('hidden');
@@ -2966,6 +3022,17 @@ function startTraining(textId) {
   // Start highlighting
   const msPerWord = 60000 / speed;
   runTrainingStep(words.length, msPerWord);
+}
+
+function renderRsvpWord(word) {
+  const letters = word.replace(/[.,!?;:""„"]/g, '').length;
+  let pivot = 0;
+  if (letters > 1) pivot = 1;
+  if (letters > 4) pivot = 2;
+  if (letters > 9) pivot = 3;
+
+  const html = word.split('').map((c, i) => i === pivot ? `<span class="rsvp-pivot">${c}</span>` : c).join('');
+  document.getElementById('rsvp-word-text').innerHTML = html;
 }
 
 function runTrainingStep(totalWords, msPerWord) {
@@ -2982,15 +3049,19 @@ function runTrainingStep(totalWords, msPerWord) {
       return;
     }
 
-    // Remove previous highlights
-    const prev = document.getElementById('tw-' + (state.trainingWordIndex - 1));
-    if (prev) { prev.classList.remove('highlight'); prev.classList.add('read'); }
+    if (state.trainingMode === 'rsvp') {
+      renderRsvpWord(state.trainingWords[state.trainingWordIndex]);
+    } else {
+      // Remove previous highlights
+      const prev = document.getElementById('tw-' + (state.trainingWordIndex - 1));
+      if (prev) { prev.classList.remove('highlight'); prev.classList.add('read'); }
 
-    // Highlight current
-    const cur = document.getElementById('tw-' + state.trainingWordIndex);
-    if (cur) {
-      cur.classList.add('highlight');
-      cur.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      // Highlight current
+      const cur = document.getElementById('tw-' + state.trainingWordIndex);
+      if (cur) {
+        cur.classList.add('highlight');
+        cur.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     }
 
     // Update progress
